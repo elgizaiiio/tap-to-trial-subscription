@@ -1,11 +1,12 @@
 /** Operator-only. Dry run by default; --apply creates drafts, --activate makes them purchasable. */
 import { SignJWT, importPKCS8 } from "jose";
-import { PLAY_CATALOG, playOfferPayload } from "../src/lib/payments/playCatalog";
+import { PLAY_CATALOG, playOfferPayload, playTrialOfferPayload } from "../src/lib/payments/playCatalog";
 
 const apply = process.argv.includes("--apply");
 const activate = process.argv.includes("--activate");
+const trialOnly = process.argv.includes("--trial");
 if (!apply) {
-  console.log(JSON.stringify({ packageName: "si.ceyo.app", products: PLAY_CATALOG, offers: PLAY_CATALOG.filter(p => p.interval === "monthly").map(p => playOfferPayload(p.productId, ["US"])) }, null, 2));
+  console.log(JSON.stringify({ packageName: "si.ceyo.app", products: PLAY_CATALOG, offers: trialOnly ? PLAY_CATALOG.map(p => playTrialOfferPayload(p.productId, ["US"])) : PLAY_CATALOG.filter(p => p.interval === "monthly").map(p => playOfferPayload(p.productId, ["US"])) }, null, 2));
 } else {
   const raw = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT;
   if (!raw) throw new Error("GOOGLE_PLAY_SERVICE_ACCOUNT must be supplied securely; no products changed.");
@@ -27,6 +28,7 @@ if (!apply) {
   for (const p of PLAY_CATALOG) {
     const path = `/subscriptions/${p.productId}`;
     let subscription = await request(path);
+    if (trialOnly && !subscription) throw new Error(`Trial requires an existing product ${p.productId}; no new product or price created.`);
     if (!subscription) {
       const prices = await request("/pricing:convertRegionPrices", "POST", { price: { currencyCode: "USD", units: String(p.recurringUsd), nanos: 0 } });
       const regionalConfigs = Object.entries(prices.convertedRegionPrices).map(([regionCode, row]: [string, any]) => ({ regionCode, price: row.price, newSubscriberAvailability: true }));
@@ -38,6 +40,22 @@ if (!apply) {
     }
     const base = subscription.basePlans?.find((b: any) => b.basePlanId === p.basePlanId);
     if (!base || base.autoRenewingBasePlanType?.billingPeriodDuration !== p.billingPeriodDuration) throw new Error(`Existing product ${p.productId} does not match the expected recurring plan; not overwritten.`);
+    if (trialOnly) {
+      if (base.state !== "ACTIVE") throw new Error(`Trial requires an already active base plan for ${p.productId}; not changed.`);
+      const offerPath = `${path}/basePlans/${p.basePlanId}/offers/free-trial-3d`;
+      let offer = await request(offerPath);
+      const regions = base.regionalConfigs.filter((r: any) => r.newSubscriberAvailability).map((r: any) => r.regionCode);
+      if (!offer) {
+        const prices = await request("/pricing:convertRegionPrices", "POST", { price: { currencyCode: "USD", units: "1", nanos: 0 } });
+        offer = await request(`${path}/basePlans/${p.basePlanId}/offers?${new URLSearchParams({ offerId: "free-trial-3d", "regionsVersion.version": prices.regionVersion.version })}`, "POST", playTrialOfferPayload(p.productId, regions));
+      }
+      if (offer.phases?.length !== 1 || offer.phases[0].duration !== "P3D" || offer.phases[0].recurrenceCount !== 1 || !offer.phases[0].regionalConfigs?.length || !offer.phases[0].regionalConfigs.every((r: any) => r.free && typeof r.free === "object") || !offer.targeting?.acquisitionRule?.scope?.anySubscriptionInApp) throw new Error(`Existing trial ${p.productId} differs; not activated.`);
+      if (activate && offer.state !== "ACTIVE") await request(`${offerPath}:activate`, "POST", {});
+      const verified = await request(offerPath);
+      if (activate && verified?.state !== "ACTIVE") throw new Error(`Trial activation read-back failed for ${p.productId}.`);
+      console.log(`${p.productId}: trial ${verified.state} / P3D; existing prices unchanged`);
+      continue;
+    }
     if (activate && base.state !== "ACTIVE") await request(`${path}/basePlans/${p.basePlanId}:activate`, "POST", {});
     if (p.interval === "monthly") {
       const offerPath = `${path}/basePlans/monthly/offers/first-month-half`;

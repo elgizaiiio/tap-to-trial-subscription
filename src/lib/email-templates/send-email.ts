@@ -2,6 +2,7 @@ import * as React from 'react'
 import { render } from '@react-email/render'
 import { EmailAPIError, sendLovableEmail } from '@lovable.dev/email-js'
 import { TEMPLATES } from './registry'
+import { hostingerConfig } from './hostinger'
 
 // Server-only: reads LOVABLE_API_KEY. Never import from client components.
 
@@ -102,8 +103,5 @@ export async function sendTemplateEmail(
 
 /** Reads Hostinger SMTP settings from the server secret store; null when not fully configured. */
 export function hostingerSmtp() {
-  const e = process.env
-  const host = e['HOSTINGER_SMTP_HOST'], user = e['HOSTINGER_SMTP_USER'], pass = e['HOSTINGER_SMTP_PASSWORD']
-  if (!host || !user || !pass) return null
-  return { host, user, pass, port: Number(e['HOSTINGER_SMTP_PORT'] || 465), from: e['HOSTINGER_SMTP_FROM'] || user, name: e['HOSTINGER_SMTP_SENDER_NAME'] || SITE_NAME }
+  return hostingerConfig(process.env)
 }
