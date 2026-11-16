@@ -4,9 +4,11 @@
 - [x] Android-only splash loader
 - [x] Play 3-day free trial offer definition (+test)
 - [ ] Push trial offer to Play Console (needs owner go-ahead; live store change)
-- [ ] Internal SMTP mail + redesign email templates to landing style
+- [x] App emails send through Hostinger SMTP (support@ceyo.si); templates already use landing style
+- [ ] Hostinger SMTP secrets — waiting on owner to enter them
 - [ ] Web 3-day trial after card link with auto-charge (Kashier/Dodo)
-- [ ] Offline storage of pages/chats + 20+ bundled languages
+- [ ] Offline storage of pages/chats (extend registerSW + pageStateCache)
+- [ ] 20+ bundled languages (app currently English + Egyptian Arabic only; large translation job)
 - [ ] Signed AAB — blocked: android/app/src native code (MainActivity, Play Billing plugin, manifest) missing from repo; no Android SDK in sandbox
 
 ## Emails, 3-day trial and Android Google sign-in — 2026-11-16
