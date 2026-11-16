@@ -100,13 +100,7 @@ public class MegsyBridge {
         String text = o.optString("text", ""), name = o.optString("title", CeyoRobot.name(ctx()));
         if (!text.isEmpty()) {
             CeyoChannels.ensure(ctx());
-            androidx.core.app.Person bot = new androidx.core.app.Person.Builder().setName(name)
-                .setIcon(androidx.core.graphics.drawable.IconCompat.createWithBitmap(CeyoRobot.bitmap(ctx(), "done", 128))).build();
-            CeyoAlarmReceiver.post(ctx(), 802, new NotificationCompat.Builder(ctx(), CeyoChannels.UPDATES).setSmallIcon(R.drawable.ceyo_notification_icon)
-                .setStyle(new NotificationCompat.MessagingStyle(new androidx.core.app.Person.Builder().setName("You").build()).addMessage(text, System.currentTimeMillis(), bot))
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE).setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-                .setContentIntent(CeyoIntents.open(ctx(), o.optString("path", CeyoRobot.path(ctx())), 803))
-                .addAction(0, "رد بصوتك", CeyoIntents.listen(ctx(), 804)).setAutoCancel(true));
+            CeyoMessage.post(ctx(), 802, name, text, o.optString("path", CeyoRobot.path(ctx())));
         }
         Routines.prefs(ctx()).edit().putString("bot_state", "done").apply(); CeyoWidget.setStatus(ctx(), name, text);
     }
@@ -161,7 +155,10 @@ public class MegsyBridge {
             s.put("overlay", CeyoIslandService.canShow(ctx()));
             android.os.PowerManager pm = ctx().getSystemService(android.os.PowerManager.class);
             s.put("battery", pm != null && pm.isIgnoringBatteryOptimizations(ctx().getPackageName()));
-            s.put("recognizer", CeyoRecognizer.find(ctx()) != null);
+            s.put("recognizer", CeyoRecognizer.any(ctx()));
+            s.put("recognizer_name", CeyoRecognizer.name(ctx()));
+            s.put("recognizers", CeyoRecognizer.all(ctx()));
+            s.put("spent_today", p.getString("spent_day", "").equals(new java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.ROOT).format(new java.util.Date())) ? p.getFloat("spent_total", 0f) : 0f);
             if (Build.VERSION.SDK_INT >= 29) { android.app.role.RoleManager rm = activity.getSystemService(android.app.role.RoleManager.class);
                 s.put("screening", rm != null && rm.isRoleHeld(android.app.role.RoleManager.ROLE_CALL_SCREENING)); }
             for (String k : new String[]{"car_on", "guard_links", "guard_bills", "morning_on", "night_on", "wake_on"}) s.put(k, p.getBoolean(k, k.startsWith("guard")));
