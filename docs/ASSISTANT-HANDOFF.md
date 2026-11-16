@@ -44,3 +44,8 @@ Read docs/ARCHITECTURE.md, root AGENTS.md, android/AGENTS.md, README.md and the 
 - New runner completion uses existing finish_routine_run RPC atomically and preserves manual pauses. Operator script permits the exact test host only with --test-lovable and verifies the candidate before modifying the destination. Normal production independent-host restrictions remain.
 - GitHub five-minute checks run 288 times/day and may be delayed. Multi-routine lease/runtime lifetime and interruption-review resumption still need careful work; never automatically replay unknown external side effects or claim exact-time execution.
 - Rotate the token supplied in chat. It was used only in temporary operator scripts, not source or persistent handoff.
+## 2026-11-16 — v11 top island
+- `CeyoIslandService` draws a TYPE_APPLICATION_OVERLAY pill at the top (FLAG_NOT_FOCUSABLE) and runs SpeechRecognizer; `CeyoAssistantActivity` forwards to it when "display over other apps" is granted.
+- `wake_mic` marker = wake engine currently holds AudioRecord (replaces wake_init check that caused false "mic busy").
+- `CeyoListeningPolicy.describe(code)` gives the Arabic reason shown in the island.
+- Phone options moved to `/settings/android` (PhoneSettings in CeyoSettings.tsx). Not yet verified on a device.
