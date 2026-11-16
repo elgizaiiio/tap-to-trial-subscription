@@ -4,4 +4,5 @@
     <string name="title_activity_main">Ceyo</string>
     <string name="package_name">si.ceyo.app</string>
     <string name="custom_url_scheme">ceyo</string>
+    <string name="widget_desc">روبوت Ceyo: كلّمه من الشاشة الرئيسية</string>
 </resources>
