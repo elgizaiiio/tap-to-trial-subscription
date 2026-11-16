@@ -30,6 +30,7 @@ import { useLocalPlanPrices } from "@/hooks/useLocalPlanPrices";
 import { formatLocalPrice } from "@/lib/payments/localPrices";
 import { readSetting, saveSetting } from "./settingsStorage";
 import { APP_LANGUAGES } from "@/lib/i18n/bundledLocales";
+import { hasPhoneAssistant, phoneOpenSettings, phoneOption, phoneRoutine, phoneScreenMode, phoneStatus, type PhoneAssistantStatus, type ScreenMode } from "@/lib/native/assistantBridge";
 
 type Nav = (to: string) => void;
 
@@ -82,6 +83,44 @@ const Group = ({ children, title }: { children: ReactNode; title?: string }) => 
 );
 
 const Toggle = ({ on }: { on: boolean }) => <span className="ceyo-switch" data-on={on}><i /></span>;
+/** Android-only assistant switches; every value lives on the phone and is read back after each change. */
+function PhoneAssistantGroup() {
+  const [st, setSt] = useState<PhoneAssistantStatus | null>(null);
+  const refresh = () => setSt(phoneStatus());
+  useEffect(() => {
+    if (!hasPhoneAssistant()) return;
+    refresh();
+    const onVis = () => { if (!document.hidden) refresh(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+  if (!st) return null;
+  const later = () => window.setTimeout(refresh, 400);
+  const pad = (n?: number) => String(n ?? 0).padStart(2, "0");
+  const pickTime = (kind: "morning" | "night", h?: number, m?: number) => {
+    const v = window.prompt(kind === "morning" ? "Morning briefing time (HH:MM)" : "Night reflection time (HH:MM)", `${pad(h)}:${pad(m)}`);
+    const match = v && /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(v.trim());
+    if (match) { phoneRoutine(kind, Number(match[1]), Number(match[2]), true); later(); }
+  };
+  const modes: ScreenMode[] = ["off", "notify", "silence"];
+  const modeName: Record<ScreenMode, string> = { off: "Off", notify: "Tell me", silence: "Silence & offer text reply" };
+  const nextMode = modes[(modes.indexOf(st.screen_mode || "notify") + 1) % modes.length];
+  return (
+    <Group title="Phone assistant">
+      <Row label="Ceyo as phone assistant" sub="Long-press power to talk" value={st.assistant ? "On" : "Set up"} onClick={() => phoneOpenSettings("assistant")} />
+      <Row label={'Say "Hey Ceyo" / "يا سيو"'} sub="Listens on the phone only" checked={!!st.wake_on} right={<Toggle on={!!st.wake_on} />} onClick={() => { phoneOption("wake_on", !st.wake_on); later(); }} />
+      <Row label="Notifications" value={st.notifications ? "On" : "Turn on"} onClick={() => { phoneOpenSettings("notifications"); later(); }} />
+      <Row label="Morning briefing" value={st.morning_on ? `${pad(st.morning_h)}:${pad(st.morning_m)}` : "Off"} onClick={() => st.morning_on ? (phoneRoutine("morning", st.morning_h ?? 7, st.morning_m ?? 0, false), later()) : pickTime("morning", st.morning_h ?? 7, st.morning_m ?? 0)} />
+      <Row label="Night reflection" value={st.night_on ? `${pad(st.night_h)}:${pad(st.night_m)}` : "Off"} onClick={() => st.night_on ? (phoneRoutine("night", st.night_h ?? 23, st.night_m ?? 0, false), later()) : pickTime("night", st.night_h ?? 23, st.night_m ?? 0)} />
+      <Row label="Driving mode" sub="Greets you when the car's Bluetooth connects" checked={!!st.car_on} right={<Toggle on={!!st.car_on} />} onClick={() => { phoneOption("car_on", !st.car_on); later(); }} />
+      <Row label="Notification guard" sub="Bills and scam links, checked on the phone" value={st.listener ? "On" : "Set up"} onClick={() => phoneOpenSettings("listener")} />
+      <Row label="Scam link alerts" checked={!!st.guard_links} right={<Toggle on={!!st.guard_links} />} onClick={() => { phoneOption("guard_links", !st.guard_links); later(); }} />
+      <Row label="Bill reminders" checked={!!st.guard_bills} right={<Toggle on={!!st.guard_bills} />} onClick={() => { phoneOption("guard_bills", !st.guard_bills); later(); }} />
+      <Row label="Unknown callers" sub={st.screening === false && st.screen_mode !== "off" ? "Allow Ceyo as call screener" : "Numbers not in your contacts"} value={modeName[st.screen_mode || "notify"]} onClick={() => { phoneScreenMode(nextMode); later(); }} />
+    </Group>
+  );
+}
+
 const Ext = () => <ArrowUpRight size={18} className="ceyo-row-chev" />;
 
 async function signOut(nav: Nav) {
@@ -164,6 +203,7 @@ function Main({ nav }: { nav: Nav }) {
         <Row label="Vault" sub="Saved labels and contact info on this device" onClick={() => nav("/settings/vault")} />
       </Group>
       <Group><Row label="Connect apps" sub="Search plugins" onClick={() => nav("/settings/apps")} /></Group>
+      <PhoneAssistantGroup />
       <Group title="Agent">
         <Row label="Permissions" sub={permissionSummary(permissions)} onClick={() => nav("/settings/permissions")} />
         <Row label="Phone calls" sub="Your mobile, agent numbers and call history" onClick={() => nav("/settings/phone")} />
