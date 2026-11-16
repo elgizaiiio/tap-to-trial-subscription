@@ -11,7 +11,15 @@ public final class CeyoSpeech {
     private static String pending, pendingLang;
     private CeyoSpeech() {}
 
-    public static synchronized void speak(Context c, String text, String lang) {
+    /** Arabic uses Ceyo's bundled voice; other languages (or a missing model) use the phone's own voices. */
+    public static void speak(Context c, String text, String lang) {
+        if (text == null || text.isEmpty()) return;
+        boolean arabic = lang != null ? lang.startsWith("ar") : text.matches("(?s).*[\\u0600-\\u06FF].*");
+        if (arabic && CeyoVoiceEngine.speak(c, text)) return;
+        speakSystem(c, text, lang);
+    }
+
+    public static synchronized void speakSystem(Context c, String text, String lang) {
         if (text == null || text.isEmpty()) return;
         if (tts == null) {
             pending = text; pendingLang = lang;
@@ -33,5 +41,5 @@ public final class CeyoSpeech {
         tts.speak(text.length() > 3500 ? text.substring(0, 3500) : text, TextToSpeech.QUEUE_FLUSH, null, "ceyo");
     }
 
-    public static synchronized void stop() { if (tts != null) tts.stop(); }
+    public static synchronized void stop() { CeyoVoiceEngine.stop(); if (tts != null) tts.stop(); }
 }
