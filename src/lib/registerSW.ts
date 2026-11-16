@@ -14,8 +14,11 @@ async function unregisterAppSw(): Promise<void> {
 
 export function registerAppServiceWorker(): void {
   if (typeof window === "undefined") return;
-  // Route-level offline caching can serve an old index with deleted hashed
-  // chunks after a deploy. Remove that worker permanently; browser HTTP cache
-  // still caches immutable assets, while navigations always receive fresh HTML.
-  void unregisterAppSw();
+  // Remove the retired page-caching worker; fresh HTML and private reads always use the network.
+  void unregisterAppSw().then(async () => {
+    if (!("serviceWorker" in navigator) || window.location.hostname !== "app.ceyo.si") return;
+    try {
+      await navigator.serviceWorker.register("/ceyo-assets-sw.js", { scope: "/", updateViaCache: "none" });
+    } catch { /* Offline first launch must not prevent the normal application boot. */ }
+  });
 }

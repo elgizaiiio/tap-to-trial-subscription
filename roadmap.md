@@ -1,4 +1,5 @@
 # Current requests (Nov 2026)
+- [ ] Owner requested direct Play update on the existing closed-testing track; inspect live access/products/tracks, preserve testers and report acceptance or exact blocker.
 - [x] Recover missing Android source or regenerate the trusted Capacitor shell; build and verify an AAB using the supplied upload key (2026-11-16 continuation). Regenerated source, native trial validation test, signed versionCode 3 / 1.0.2, bundletool validation and matching certificate.
 - [x] Import GitHub repo
 - [x] Android: subscribe opens Google Play immediately (no extra card step)
