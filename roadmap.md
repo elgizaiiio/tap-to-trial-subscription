@@ -1,11 +1,12 @@
 ## Active assistant repair and living handoff — 2026-11-16
-- [ ] Diagnose and repair stopped AI scheduling, verify real due-run delivery; record external scheduler/deployment blockers.
-- [ ] Use owner's supplied direct GitHub authorization for private scheduler repair; keep it out of source, verify permissions, recommend rotation after use.
-- [ ] Repair wake/driving toggles with confirmed native state and permission handoff (never trust a fabricated URL).
-- [ ] Show transparent robot-only assistant preview; implement subtle multicolour screen edges and automatic listening renewal.
-- [ ] Connect real phone capabilities to assistant actions without claiming unrestricted notification access.
-- [ ] Run focused web/native tests, build/sign next Ceyo Try APK, and publish matching web changes when available.
-- [ ] Keep README, roadmap and docs/ASSISTANT-HANDOFF.md current at each work phase; record blockers and device-only verification separately. Do not copy credentials or private account data into GitHub.
+- [x] Restore private scheduler destination to current Lovable host, synchronize Vault signing value with encrypted GitHub secret; verification dispatch completed successfully at 12:18:56 UTC. Real due runs completed and one reply per run persisted.
+- [x] Verify owner's direct GitHub authorization, keep it outside source and remove temporary credential-bearing scripts; advise rotation because it appeared in chat.
+- [x] Repair wake/driving bridge receiver, optimistic state/readback, cross-process activation and denied permissions. Isolated real settings UI confirms both toggles at 434px without overflow; physical device not verified.
+- [x] Show transparent robot-only preview; implement native edge light and automatic silence/no-match listening renewal; bounded hard-error retries.
+- [x] Document actual phone features in agent instructions and enable one spoken chat reply for assistant-origin voice requests; no fabricated notification access.
+- [x] 29 focused web + 15 JVM tests pass; build/sign Ceyo Try 1.2.4-try/code 10, arm64, matching v9 certificate; verified direct APK download. Publish requested; public root HTTP 200.
+- [x] Update README and docs/ASSISTANT-HANDOFF.md with requirements, evidence and remaining limits for GitHub successors.
+- [ ] Device-only verification: Honor wake accuracy, actual microphone permissions, native transparent edges, bundled audio and car Bluetooth need the owner's device. Full voice conversation inside overlay, general notification model access and trial-package Firebase are not implemented; do not represent these as working.
 
 ## Unified chat and Android controls — 2026-11-16
 - [x] Show proposed assistant/notification design before native visual changes.

@@ -43,6 +43,7 @@ One "New Group" flow (`NewPeopleChat` mode `group`): add any mix of people and b
 
 ## Handoff files
 `roadmap.md` = active task list; `README.md` = current work + verification; `AGENTS.md` (root + per folder) = rules.
+- `docs/ASSISTANT-HANDOFF.md` = current Android assistant/scheduler requirements, release evidence and blockers; update at phase starts/ends. Current test APK uses tap-to-trial-subscription.lovable.app, not the production Android domain; package si.ceyo.app.trial installs alongside production.
 
 ## Page retention and cleanup
 - `src/lib/pageStateCache.ts` retains allowlisted scroll positions and UI selections only, with owner keys, schema validation, expiry and bounded storage. `authStore` clears it on identity transitions. It is not authorization or an entitlement source.
