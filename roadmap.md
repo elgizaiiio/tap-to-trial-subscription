@@ -5,7 +5,7 @@
 - [x] Play 3-day free trial offer definition (+test)
 - [ ] Push trial offer to Play Console (needs owner go-ahead; live store change)
 - [x] App emails send through Hostinger SMTP (support@ceyo.si); templates already use landing style
-- [ ] Hostinger SMTP secrets — waiting on owner to enter them
+- [x] Hostinger SMTP secrets saved (live send test pending after publish)
 - [ ] Web 3-day trial after card link with auto-charge (Kashier/Dodo)
 - [ ] Offline storage of pages/chats (extend registerSW + pageStateCache)
 - [ ] 20+ bundled languages (app currently English + Egyptian Arabic only; large translation job)
