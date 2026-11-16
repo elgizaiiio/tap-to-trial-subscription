@@ -565,7 +565,7 @@ export function HubChat({
         </button>
         <div className="cx-head-actions" data-calls={!group}>
           {!group && <div className="cx-head-calls">
-            <button type="button" className="cx-hcall" aria-label={ar ? "مكالمة صوتية" : "Voice call"} title={ar ? "مكالمة صوتية" : "Voice call"} onClick={() => { setMenuOpen(false); unlockCallAudio(); calls.start({ kind: "voice", agent, agentIds: agents.map((a) => a.id), conversationId: sessionId }); }}><Phone size={19} strokeWidth={1.9} /></button>
+            <Button variant="ghost" type="button" className="cx-hcall" aria-label={ar ? "مكالمة صوتية" : "Voice call"} title={ar ? "مكالمة صوتية" : "Voice call"} onClick={() => { setMenuOpen(false); calls.start({ kind: "voice", agent, agentIds: agents.map((a) => a.id), conversationId: sessionId }); try { navigator.vibrate?.(15); } catch {} unlockCallAudio(); }}><Phone size={19} strokeWidth={1.9} /></Button>
             <span className="cx-hcall-sep" aria-hidden="true" />
             <button type="button" className="cx-hcall" aria-label={ar ? "مكالمة فيديو" : "Video call"} title={ar ? "مكالمة فيديو" : "Video call"} onClick={() => { setMenuOpen(false); unlockCallAudio(); calls.start({ kind: "video", agent, agentIds: agents.map((a) => a.id), conversationId: sessionId }); }}><Video size={21} strokeWidth={1.9} /></button>
           </div>}

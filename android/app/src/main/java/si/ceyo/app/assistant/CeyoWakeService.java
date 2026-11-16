@@ -33,8 +33,11 @@ public class CeyoWakeService extends Service {
 
     public static String health(Context c) {
         java.io.File guard = new java.io.File(c.getFilesDir(), "wake_init");
-        if (guard.exists() && System.currentTimeMillis() - guard.lastModified() > 30000) return "failed";
-        try { return new String(java.nio.file.Files.readAllBytes(new java.io.File(c.getFilesDir(), "wake_status").toPath()), java.nio.charset.StandardCharsets.UTF_8); } catch (Exception e) { return "off"; }
+        try {
+            String status = new String(java.nio.file.Files.readAllBytes(new java.io.File(c.getFilesDir(), "wake_status").toPath()), java.nio.charset.StandardCharsets.UTF_8);
+            if (guard.exists() && System.currentTimeMillis() - guard.lastModified() > 30000 && !"listening".equals(status)) return "failed";
+            return status;
+        } catch (Exception e) { return "off"; }
     }
     private void health(String value) {
         try { java.nio.file.Files.write(new java.io.File(getFilesDir(), "wake_status").toPath(), value.getBytes(java.nio.charset.StandardCharsets.UTF_8)); } catch (Exception ignored) {}
