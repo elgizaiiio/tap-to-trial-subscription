@@ -1,0 +1,2137 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18"
+  }
+  public: {
+    Tables: {
+      agent_action_requests: {
+        Row: {
+          account_id: string
+          arguments: Json
+          conversation_id: string
+          created_at: string
+          id: string
+          result: Json | null
+          status: string
+          tool_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          arguments?: Json
+          conversation_id: string
+          created_at?: string
+          id?: string
+          result?: Json | null
+          status?: string
+          tool_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          arguments?: Json
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          result?: Json | null
+          status?: string
+          tool_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_action_requests_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_artifacts: {
+        Row: {
+          created_at: string
+          id: string
+          mime: string
+          name: string
+          size_bytes: number
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime: string
+          name: string
+          size_bytes: number
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime?: string
+          name?: string
+          size_bytes?: number
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_browser_contexts: {
+        Row: {
+          bot_id: string
+          context_id: string | null
+          created_at: string
+          id: string
+          lease_token: string | null
+          lease_until: string | null
+          project_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id: string
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          lease_token?: string | null
+          lease_until?: string | null
+          project_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          lease_token?: string | null
+          lease_until?: string | null
+          project_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_browser_contexts_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: true
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_calls: {
+        Row: {
+          bot_id: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          reason: string
+          ring_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          reason?: string
+          ring_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          reason?: string
+          ring_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_calls_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_calls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_documents: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          mime: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          mime: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          mime?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_jobs: {
+        Row: {
+          bot_id: string | null
+          conversation_id: string
+          created_at: string
+          cursor_at: string
+          error: string | null
+          event_id: string | null
+          goal: string
+          id: string
+          result: string | null
+          status: string
+          system_prompt: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          conversation_id: string
+          created_at?: string
+          cursor_at?: string
+          error?: string | null
+          event_id?: string | null
+          goal: string
+          id?: string
+          result?: string | null
+          status?: string
+          system_prompt: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          cursor_at?: string
+          error?: string | null
+          event_id?: string | null
+          goal?: string
+          id?: string
+          result?: string | null
+          status?: string
+          system_prompt?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_jobs_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_jobs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_memories: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_routine_runs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          result: string | null
+          routine_id: string
+          scheduled_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          result?: string | null
+          routine_id: string
+          scheduled_at: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          result?: string | null
+          routine_id?: string
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_routine_runs_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "agent_routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_routines: {
+        Row: {
+          active: boolean
+          conversation_id: string
+          created_at: string
+          goal: string
+          id: string
+          interval_hours: number
+          interval_minutes: number | null
+          last_error: string | null
+          last_result: string | null
+          lease_until: string | null
+          next_run_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          conversation_id: string
+          created_at?: string
+          goal: string
+          id?: string
+          interval_hours: number
+          interval_minutes?: number | null
+          last_error?: string | null
+          last_result?: string | null
+          lease_until?: string | null
+          next_run_at: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          conversation_id?: string
+          created_at?: string
+          goal?: string
+          id?: string
+          interval_hours?: number
+          interval_minutes?: number | null
+          last_error?: string | null
+          last_result?: string | null
+          lease_until?: string | null
+          next_run_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_routines_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_trials: {
+        Row: {
+          ends_at: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          ends_at?: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          ends_at?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_usage_balances: {
+        Row: {
+          allowance_usd: number
+          created_at: string
+          spent_usd: number
+          updated_at: string
+          usage_day: string
+          user_id: string
+        }
+        Insert: {
+          allowance_usd?: number
+          created_at?: string
+          spent_usd?: number
+          updated_at?: string
+          usage_day?: string
+          user_id: string
+        }
+        Update: {
+          allowance_usd?: number
+          created_at?: string
+          spent_usd?: number
+          updated_at?: string
+          usage_day?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_usage_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_usage_operations: {
+        Row: {
+          amount_usd: number
+          created_at: string
+          id: string
+          operation_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_usd: number
+          created_at?: string
+          id?: string
+          operation_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_usd?: number
+          created_at?: string
+          id?: string
+          operation_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_usage_operations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bot_group_members: {
+        Row: {
+          bot_id: string
+          created_at: string
+          group_id: string
+          position: number
+        }
+        Insert: {
+          bot_id: string
+          created_at?: string
+          group_id: string
+          position?: number
+        }
+        Update: {
+          bot_id?: string
+          created_at?: string
+          group_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_group_members_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bot_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "bot_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bot_groups: {
+        Row: {
+          avatar_url: string | null
+          category: string
+          coordinator_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          category?: string
+          coordinator_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          category?: string
+          coordinator_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_groups_coordinator_id_fkey"
+            columns: ["coordinator_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bot_phone_agents: {
+        Row: {
+          bot_id: string
+          config_hash: string | null
+          telnyx_assistant_id: string
+          texml_app_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bot_id: string
+          config_hash?: string | null
+          telnyx_assistant_id: string
+          texml_app_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bot_id?: string
+          config_hash?: string | null
+          telnyx_assistant_id?: string
+          texml_app_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_phone_agents_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: true
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bots: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          instructions: string | null
+          is_public: boolean
+          look: Json
+          model: string | null
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_public?: boolean
+          look?: Json
+          model?: string | null
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_public?: boolean
+          look?: Json
+          model?: string | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      channel_deliveries: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          identity_id: string | null
+          platform: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          identity_id?: string | null
+          platform: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          identity_id?: string | null
+          platform?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_deliveries_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "channel_identities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_identities: {
+        Row: {
+          bot_id: string
+          conversation_id: string | null
+          created_at: string
+          external_user_id: string
+          id: string
+          platform: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id: string
+          conversation_id?: string | null
+          created_at?: string
+          external_user_id: string
+          id?: string
+          platform: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string
+          conversation_id?: string | null
+          created_at?: string
+          external_user_id?: string
+          id?: string
+          platform?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_identities_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_identities_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_pairings: {
+        Row: {
+          bot_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          platform: string
+          token_hash: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          platform: string
+          token_hash: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          platform?: string
+          token_hash?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_pairings_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          bot_id: string | null
+          created_at: string
+          group_id: string | null
+          id: string
+          is_hidden: boolean
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_hidden?: boolean
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_hidden?: boolean
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "bot_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      free_video_call_daily_usage: {
+        Row: {
+          call_day: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          call_day?: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          call_day?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          bot_id: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          role: string
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          content?: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          role?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_orders: {
+        Row: {
+          amount: number
+          checkout_ref: string | null
+          created_at: string
+          currency: string
+          id: string
+          interval: string
+          method: string | null
+          provider: string
+          provider_ref: string | null
+          status: string
+          tier: string
+          updated_at: string
+          usd_amount: number | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          checkout_ref?: string | null
+          created_at?: string
+          currency: string
+          id: string
+          interval: string
+          method?: string | null
+          provider: string
+          provider_ref?: string | null
+          status?: string
+          tier: string
+          updated_at?: string
+          usd_amount?: number | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          checkout_ref?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          interval?: string
+          method?: string | null
+          provider?: string
+          provider_ref?: string | null
+          status?: string
+          tier?: string
+          updated_at?: string
+          usd_amount?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      people_messages: {
+        Row: {
+          bot_id: string | null
+          content: string
+          created_at: string
+          id: string
+          sender_id: string | null
+          thread_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          sender_id?: string | null
+          thread_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          sender_id?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_messages_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "people_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "people_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      people_thread_bots: {
+        Row: {
+          added_by: string
+          bot_id: string
+          created_at: string
+          thread_id: string
+        }
+        Insert: {
+          added_by: string
+          bot_id: string
+          created_at?: string
+          thread_id: string
+        }
+        Update: {
+          added_by?: string
+          bot_id?: string
+          created_at?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_thread_bots_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "people_thread_bots_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "people_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      people_thread_members: {
+        Row: {
+          joined_at: string
+          last_read_at: string
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          last_read_at?: string
+          role?: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          last_read_at?: string
+          role?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_thread_members_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "people_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      people_threads: {
+        Row: {
+          created_at: string
+          created_by: string
+          direct_key: string | null
+          id: string
+          kind: string
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          direct_key?: string | null
+          id?: string
+          kind?: string
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          direct_key?: string | null
+          id?: string
+          kind?: string
+          name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      phone_calls: {
+        Row: {
+          agent_number: string | null
+          bot_id: string | null
+          call_control_id: string | null
+          conversation_id: string | null
+          counterpart: string
+          created_at: string
+          direction: string
+          duration_sec: number | null
+          ended_at: string | null
+          error: string | null
+          id: string
+          purpose: string | null
+          status: string
+          summary: string | null
+          telnyx_conversation_id: string | null
+          transcript: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_number?: string | null
+          bot_id?: string | null
+          call_control_id?: string | null
+          conversation_id?: string | null
+          counterpart: string
+          created_at?: string
+          direction: string
+          duration_sec?: number | null
+          ended_at?: string | null
+          error?: string | null
+          id?: string
+          purpose?: string | null
+          status?: string
+          summary?: string | null
+          telnyx_conversation_id?: string | null
+          transcript?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_number?: string | null
+          bot_id?: string | null
+          call_control_id?: string | null
+          conversation_id?: string | null
+          counterpart?: string
+          created_at?: string
+          direction?: string
+          duration_sec?: number | null
+          ended_at?: string | null
+          error?: string | null
+          id?: string
+          purpose?: string | null
+          status?: string
+          summary?: string | null
+          telnyx_conversation_id?: string | null
+          transcript?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_calls_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_calls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_numbers: {
+        Row: {
+          assigned_at: string | null
+          bot_id: string | null
+          created_at: string
+          e164: string
+          id: string
+          owner_id: string | null
+          telnyx_number_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          bot_id?: string | null
+          created_at?: string
+          e164: string
+          id?: string
+          owner_id?: string | null
+          telnyx_number_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          bot_id?: string | null
+          created_at?: string
+          e164?: string
+          id?: string
+          owner_id?: string | null
+          telnyx_number_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_numbers_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: true
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_app_api_keys: {
+        Row: {
+          app_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          key_hash: string
+          last_four: string
+          last_used_at: string | null
+          monthly_request_limit: number | null
+          name: string
+          prefix: string
+          rate_limit_rpm: number
+          revoked_at: string | null
+          status: string
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          key_hash: string
+          last_four: string
+          last_used_at?: string | null
+          monthly_request_limit?: number | null
+          name?: string
+          prefix: string
+          rate_limit_rpm?: number
+          revoked_at?: string | null
+          status?: string
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          key_hash?: string
+          last_four?: string
+          last_used_at?: string | null
+          monthly_request_limit?: number | null
+          name?: string
+          prefix?: string
+          rate_limit_rpm?: number
+          revoked_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_app_api_keys_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "platform_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_apps: {
+        Row: {
+          client_id: string
+          client_secret_hash: string | null
+          client_secret_prefix: string | null
+          client_type: string
+          created_at: string
+          description: string | null
+          homepage_url: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          owner_user_id: string
+          redirect_uris: string[]
+          scopes: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          client_secret_hash?: string | null
+          client_secret_prefix?: string | null
+          client_type?: string
+          created_at?: string
+          description?: string | null
+          homepage_url?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_user_id: string
+          redirect_uris?: string[]
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_secret_hash?: string | null
+          client_secret_prefix?: string | null
+          client_type?: string
+          created_at?: string
+          description?: string | null
+          homepage_url?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_user_id?: string
+          redirect_uris?: string[]
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_audit_events: {
+        Row: {
+          actor_user_id: string | null
+          app_id: string | null
+          created_at: string
+          event: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          actor_user_id?: string | null
+          app_id?: string | null
+          created_at?: string
+          event: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          actor_user_id?: string | null
+          app_id?: string | null
+          created_at?: string
+          event?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_audit_events_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "platform_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_oauth_codes: {
+        Row: {
+          app_id: string
+          code_challenge: string
+          code_challenge_method: string
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          redirect_uri: string
+          scopes: string[]
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          code_challenge: string
+          code_challenge_method?: string
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          redirect_uri: string
+          scopes: string[]
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          code_challenge?: string
+          code_challenge_method?: string
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          redirect_uri?: string
+          scopes?: string[]
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_oauth_codes_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "platform_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_oauth_tokens: {
+        Row: {
+          access_expires_at: string
+          access_token_hash: string
+          app_id: string
+          created_at: string
+          id: string
+          refresh_expires_at: string | null
+          refresh_token_hash: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          scopes: string[]
+          token_family_id: string
+          user_id: string
+        }
+        Insert: {
+          access_expires_at: string
+          access_token_hash: string
+          app_id: string
+          created_at?: string
+          id?: string
+          refresh_expires_at?: string | null
+          refresh_token_hash?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          scopes: string[]
+          token_family_id?: string
+          user_id: string
+        }
+        Update: {
+          access_expires_at?: string
+          access_token_hash?: string
+          app_id?: string
+          created_at?: string
+          id?: string
+          refresh_expires_at?: string | null
+          refresh_token_hash?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          scopes?: string[]
+          token_family_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_oauth_tokens_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "platform_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_rate_windows: {
+        Row: {
+          api_key_id: string
+          hit_count: number
+          window_start: string
+          window_type: string
+        }
+        Insert: {
+          api_key_id: string
+          hit_count?: number
+          window_start: string
+          window_type: string
+        }
+        Update: {
+          api_key_id?: string
+          hit_count?: number
+          window_start?: string
+          window_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_rate_windows_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "platform_app_api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_usage_logs: {
+        Row: {
+          api_key_id: string | null
+          app_id: string | null
+          created_at: string
+          endpoint: string
+          http_status: number | null
+          id: string
+          input_tokens: number | null
+          model: string | null
+          operation_key: string | null
+          output_tokens: number | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          app_id?: string | null
+          created_at?: string
+          endpoint: string
+          http_status?: number | null
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          operation_key?: string | null
+          output_tokens?: number | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          app_id?: string | null
+          created_at?: string
+          endpoint?: string
+          http_status?: number | null
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          operation_key?: string | null
+          output_tokens?: number | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "platform_app_api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_usage_logs_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "platform_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          language: string
+          onboarding_completed: boolean
+          phone_e164: string | null
+          primary_bot_id: string | null
+          updated_at: string
+          user_type: string | null
+          username: string | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          language?: string
+          onboarding_completed?: boolean
+          phone_e164?: string | null
+          primary_bot_id?: string | null
+          updated_at?: string
+          user_type?: string | null
+          username?: string | null
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          language?: string
+          onboarding_completed?: boolean
+          phone_e164?: string | null
+          primary_bot_id?: string | null
+          updated_at?: string
+          user_type?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_primary_bot_id_fkey"
+            columns: ["primary_bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_api_keys: {
+        Row: {
+          api_key: string
+          cooldown_until: string | null
+          created_at: string
+          failure_count: number
+          id: string
+          last_error: string | null
+          last_used_at: string | null
+          provider: string
+          status: string
+        }
+        Insert: {
+          api_key: string
+          cooldown_until?: string | null
+          created_at?: string
+          failure_count?: number
+          id?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          provider: string
+          status?: string
+        }
+        Update: {
+          api_key?: string
+          cooldown_until?: string | null
+          created_at?: string
+          failure_count?: number
+          id?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          provider?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string
+          interval: string
+          last_order_id: string | null
+          plan: string
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end: string
+          interval: string
+          last_order_id?: string | null
+          plan: string
+          provider: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string
+          interval?: string
+          last_order_id?: string | null
+          plan?: string
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_last_order_id_fkey"
+            columns: ["last_order_id"]
+            isOneToOne: false
+            referencedRelation: "payment_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telegram_inbox: {
+        Row: {
+          chat_id: number | null
+          chat_title: string | null
+          created_at: string
+          doc_id: string
+          from_name: string | null
+          id: string
+          kind: string
+          outgoing: boolean
+          text: string | null
+          update_id: number
+          user_id: string
+        }
+        Insert: {
+          chat_id?: number | null
+          chat_title?: string | null
+          created_at?: string
+          doc_id: string
+          from_name?: string | null
+          id?: string
+          kind: string
+          outgoing?: boolean
+          text?: string | null
+          update_id: number
+          user_id: string
+        }
+        Update: {
+          chat_id?: number | null
+          chat_title?: string | null
+          created_at?: string
+          doc_id?: string
+          from_name?: string | null
+          id?: string
+          kind?: string
+          outgoing?: boolean
+          text?: string | null
+          update_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_inbox_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "agent_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telephony_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          language: string
+          notifications: Json
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          language?: string
+          notifications?: Json
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          language?: string
+          notifications?: Json
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_operations: {
+        Row: {
+          created_at: string
+          id: string
+          operation_key: string
+          request_hash: string
+          result: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          operation_key: string
+          request_hash: string
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          operation_key?: string
+          request_hash?: string
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      add_people_bot: {
+        Args: { p_bot: string; p_thread: string }
+        Returns: undefined
+      }
+      add_people_member: {
+        Args: { p_thread: string; p_username: string }
+        Returns: undefined
+      }
+      agent_usage_status: { Args: never; Returns: Json }
+      charge_agent_usage: {
+        Args: { p_operation_key: string; p_user_id: string }
+        Returns: Json
+      }
+      claim_agent_browser: {
+        Args: { p_bot: string; p_token: string; p_user: string }
+        Returns: {
+          bot_id: string
+          context_id: string | null
+          created_at: string
+          id: string
+          lease_token: string | null
+          lease_until: string | null
+          project_id: string | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "agent_browser_contexts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_agent_routines: {
+        Args: never
+        Returns: {
+          active: boolean
+          conversation_id: string
+          created_at: string
+          goal: string
+          id: string
+          interval_hours: number
+          interval_minutes: number | null
+          last_error: string | null
+          last_result: string | null
+          lease_until: string | null
+          next_run_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "agent_routines"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      cleanup_account_data: { Args: { p_user: string }; Returns: undefined }
+      complete_onboarding: {
+        Args: {
+          p_age: number
+          p_avatar: string
+          p_bot_name: string
+          p_description: string
+          p_instructions: string
+          p_look: Json
+          p_name: string
+          p_type: string
+        }
+        Returns: string
+      }
+      consume_channel_pairing: {
+        Args: {
+          p_external_user: string
+          p_platform: string
+          p_token_hash: string
+        }
+        Returns: string
+      }
+      create_people_group: {
+        Args: { p_bot_ids: string[]; p_name: string; p_usernames: string[] }
+        Returns: string
+      }
+      ensure_agent_trial: { Args: { p_user_id: string }; Returns: string }
+      ensure_my_agent_trial: { Args: never; Returns: string }
+      finish_agent_job: {
+        Args: {
+          p_id: string
+          p_metadata: Json
+          p_text: string
+          p_waiting: boolean
+        }
+        Returns: boolean
+      }
+      finish_routine_run: {
+        Args: {
+          p_metadata: Json
+          p_next: string
+          p_run: string
+          p_text: string
+          p_waiting: boolean
+        }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_people_member: { Args: { _thread: string }; Returns: boolean }
+      leave_people_thread: { Args: { p_thread: string }; Returns: undefined }
+      my_people_threads: { Args: never; Returns: Json }
+      open_direct_thread: { Args: { p_username: string }; Returns: string }
+      people_thread_info: { Args: { p_thread: string }; Returns: Json }
+      platform_touch_key_limits: { Args: { p_key_id: string }; Returns: Json }
+      platform_user_entitlement: { Args: { p_user_id: string }; Returns: Json }
+      read_agentsky_api_key: { Args: never; Returns: string }
+      read_channel_credential: { Args: { p_name: string }; Returns: string }
+      read_runtime_credential: { Args: { p_name: string }; Returns: string }
+      read_telegram_bot_token: { Args: never; Returns: string }
+      reserve_free_video_call_minute: { Args: never; Returns: Json }
+      save_bot_group: {
+        Args: {
+          p_category?: string
+          p_coordinator: string
+          p_id?: string
+          p_members: string[]
+          p_name: string
+        }
+        Returns: {
+          avatar_url: string | null
+          category: string
+          coordinator_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bot_groups"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      save_wallet_once: {
+        Args: { p_user: string; p_wallet: Json }
+        Returns: Json
+      }
+      search_people: {
+        Args: { p_query: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
+      settle_payment_order: {
+        Args: { p_order: string; p_ref: string }
+        Returns: boolean
+      }
+      store_agentsky_api_key: { Args: { p_key: string }; Returns: undefined }
+      store_channel_credential: {
+        Args: { p_name: string; p_value: string }
+        Returns: undefined
+      }
+      store_runtime_credential: {
+        Args: { p_name: string; p_value: string }
+        Returns: undefined
+      }
+      store_telegram_bot_token: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
+      wallet_encryption_key: { Args: { p_candidate: string }; Returns: string }
+    }
+    Enums: {
+      app_role: "admin" | "user"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "user"],
+    },
+  },
+} as const
