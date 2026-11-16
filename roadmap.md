@@ -1,3 +1,9 @@
+## Unified chat and Android controls — 2026-11-16
+- [ ] Show proposed assistant/notification design before native visual changes.
+- [ ] Reuse one bot thread and read all prior owned app-thread messages without deleting history.
+- [ ] Remove blocking WebView trust checks; repair assistant permissions and microphone handover.
+- [ ] Build/sign Ceyo Try v9 and verify tests; real Honor wake accuracy remains device-dependent.
+
 ## Android assistant repair — 2026-11-16
 - [x] Validate current keyword/model assets (local engine init passed), repair microphone lifecycle and exclude assistant self-selection; device accuracy/crash reproduction not available.
 - [x] Sync primary name/path and render local stateful robot in assistant/widget/compact/expanded notifications; deliver actual reply text. OEM top-chip appearance and live assistant-window answers remain unimplemented.
