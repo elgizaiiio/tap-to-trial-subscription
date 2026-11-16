@@ -29,3 +29,20 @@ export function playOfferPayload(productId: string, regions: string[]) {
     }],
   };
 }
+/** 3-day free trial for new subscribers; Google Play collects the payment method and auto-charges when it ends. */
+export const PLAY_FREE_TRIAL_OFFER = { offerId: "free-trial-3d", duration: "P3D" } as const;
+
+export function playTrialOfferPayload(productId: string, regions: string[]) {
+  const product = PLAY_CATALOG.find(p => p.productId === productId);
+  if (!product) throw new Error("Unknown Play product");
+  if (!regions.length) throw new Error("Offer regions required");
+  return {
+    packageName: "si.ceyo.app", productId, basePlanId: product.basePlanId,
+    offerId: PLAY_FREE_TRIAL_OFFER.offerId,
+    targeting: { acquisitionRule: { scope: { anySubscriptionInApp: {} } } },
+    regionalConfigs: regions.map(regionCode => ({ regionCode, newSubscriberAvailability: true }),),
+    phases: [{ duration: PLAY_FREE_TRIAL_OFFER.duration, recurrenceCount: 1,
+      regionalConfigs: regions.map(regionCode => ({ regionCode, free: {} })),
+    }],
+  };
+}
