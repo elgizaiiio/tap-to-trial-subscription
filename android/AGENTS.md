@@ -8,3 +8,6 @@
 - Assistant features live in si.ceyo.app.assistant and talk to the web only through `MegsyBridge` (`window.MegsyAndroid`), which answers pages from https://app.ceyo.si only; phone→web hand-offs are relative paths with `ceyoPrompt`/`ceyoSend`. Why: no arbitrary-origin native access and one bridge contract (docs/android-bridge.md).
 - Notification reading for bills/scam links runs on-device in `Sentinel` and never uploads messages; it only works after the user enables the listener. Why: privacy and Play policy.
 - On-phone voice uses sherpa-onnx (wake word + bundled Piper Arabic voice); the AAR and model.onnx exceed the repo file limit, so run scripts/fetch-android-voice.sh before building. Why: free, offline, no vendor key, repository stays committable.
+
+- Native assistant recognition selects an external SpeechRecognizer component explicitly; native status notifications use real chat steps and reply text, while primary identity is synced by the authenticated home. Why: selecting the assistant itself recursively fails, and the composer has no final answer data.
+- Android trial artifacts are selected through CEYO_ANDROID_TRY with a distinct package and build-generated label; skip production Firebase configuration in trial builds. Why: test installs must coexist without modifying the production identifier or binding an unrelated Firebase app.

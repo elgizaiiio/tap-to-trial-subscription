@@ -1,3 +1,8 @@
+## Android assistant repair — 2026-11-16
+- [x] Validate current keyword/model assets (local engine init passed), repair microphone lifecycle and exclude assistant self-selection; device accuracy/crash reproduction not available.
+- [x] Sync primary name/path and render local stateful robot in assistant/widget/compact/expanded notifications; deliver actual reply text. OEM top-chip appearance and live assistant-window answers remain unimplemented.
+- [x] Build/sign Ceyo Try v8 APK with matching v7 certificate; 11 native + 11 web tests; request Lovable publishing. Device voice/notifications and hosted private session not verified.
+
 # Current requests (Nov 2026)
 - [ ] Direct Play update: Google rejected versionCode 3 because the supplied signing key is not the registered upload key; needs the original upload key or owner-approved Play Console upload-key reset. Existing alpha closed-testing release remains versionCode 2; no tester lists changed.
 - [x] Recover missing Android source or regenerate the trusted Capacitor shell; build and verify an AAB using the supplied upload key (2026-11-16 continuation). Regenerated source, native trial validation test, signed versionCode 3 / 1.0.2, bundletool validation and matching certificate.

@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { capturePhonePrompt, consumePhonePrompt } from "./assistantBridge";
+import { capturePhonePrompt, consumePhonePrompt, phoneReply } from "./assistantBridge";
 
 describe("phone prompts", () => {
   beforeEach(() => sessionStorage.clear());
@@ -14,5 +14,18 @@ describe("phone prompts", () => {
   });
   it("ignores empty prompts", () => {
     expect(capturePhonePrompt("https://app.ceyo.si/?ceyoPrompt=%20")).toBeNull();
+  });
+});
+
+describe("actual phone replies", () => {
+  it("uses the bot answer, not a task-ready placeholder", () => {
+    expect(phoneReply({ text: "النتيجة: 42", running: false, stopped: false, error: null })).toBe("النتيجة: 42");
+  });
+  it("does not deliver a successful reply for a failed turn", () => {
+    expect(phoneReply({ text: "partial", running: false, stopped: false, error: "failed" })).toBe("");
+  });
+  it("does not deliver cancelled or still-running turns", () => {
+    expect(phoneReply({ text: "partial", running: false, stopped: true, error: null })).toBe("");
+    expect(phoneReply({ text: "partial", running: true, stopped: false, error: null })).toBe("");
   });
 });

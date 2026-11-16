@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Ceyo</string>
-    <string name="title_activity_main">Ceyo</string>
     <string name="package_name">si.ceyo.app</string>
     <string name="custom_url_scheme">ceyo</string>
     <string name="widget_desc">روبوت Ceyo: كلّمه من الشاشة الرئيسية</string>

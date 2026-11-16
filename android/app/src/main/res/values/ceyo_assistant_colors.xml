@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ceyo_sheet_surface">#F5101114</color>
+    <color name="ceyo_sheet_text">#F5F5F7</color>
+    <color name="ceyo_sheet_muted">#B0B2BA</color>
+    <color name="ceyo_robot_light">#FFFFFF</color>
+    <color name="ceyo_robot_shade">#D5D7DC</color>
+    <color name="ceyo_robot_eyes">#16171B</color>
+</resources>
