@@ -1,4 +1,5 @@
 # Current requests (Nov 2026)
+- [ ] Recover missing Android source or regenerate the trusted Capacitor shell; build and verify an AAB using the supplied upload key (2026-11-16 continuation).
 - [x] Import GitHub repo
 - [x] Android: subscribe opens Google Play immediately (no extra card step)
 - [x] Android-only splash loader
