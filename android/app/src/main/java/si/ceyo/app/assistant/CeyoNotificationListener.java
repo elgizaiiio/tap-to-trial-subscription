@@ -34,6 +34,18 @@ public class CeyoNotificationListener extends NotificationListenerService {
                 break;
             }
         }
+        double spent = Sentinel.detectSpend(title + " " + text);
+        if (spent > 0) {
+            String today = new java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.ROOT).format(new java.util.Date());
+            float total = (today.equals(p.getString("spent_day", "")) ? p.getFloat("spent_total", 0f) : 0f) + (float) spent;
+            int count = (today.equals(p.getString("spent_day", "")) ? p.getInt("spent_count", 0) : 0) + 1;
+            p.edit().putString("spent_day", today).putFloat("spent_total", total).putInt("spent_count", count).apply();
+            String sum = String.format(java.util.Locale.ROOT, "%.0f", total);
+            String msg = total >= p.getFloat("spend_limit", 1000f)
+                ? "خلي بالك 👀 صرفت النهارده " + sum + " في " + count + " عمليات، ده كتير عن العادي. تحب أراجعهم معاك؟"
+                : "اتسجل مصروف " + String.format(java.util.Locale.ROOT, "%.0f", spent) + " — إجمالي النهارده " + sum + ".";
+            CeyoMessage.post(this, 820, null, msg, "/?ceyoSend=0&ceyoPrompt=" + Uri.encode("صرفت النهارده " + sum + " في " + count + " عمليات. راجع معايا مصاريفي:"));
+        }
         if (p.getBoolean("guard_bills", true)) {
             Sentinel.Bill bill = Sentinel.detectBill(title + " " + text);
             if (bill != null) {

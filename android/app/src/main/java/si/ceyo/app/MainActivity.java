@@ -33,7 +33,7 @@ public class MainActivity extends BridgeActivity {
         handleLaunch(getIntent());
     }
 
-    @Override public void onResume() { super.onResume(); si.ceyo.app.assistant.CeyoWakeService.start(this); }
+    @Override public void onResume() { super.onResume(); si.ceyo.app.assistant.CeyoWakeService.start(this); si.ceyo.app.assistant.Routines.restoreAll(this); }
 
     @Override public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
         super.onRequestPermissionsResult(code, perms, res);

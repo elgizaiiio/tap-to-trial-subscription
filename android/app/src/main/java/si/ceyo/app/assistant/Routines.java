@@ -29,5 +29,23 @@ public final class Routines {
         CeyoAlarmReceiver.schedule(c, kind, kind, kind, "", "/", at);
     }
 
-    public static void restoreAll(Context c) { rescheduleNext(c, CeyoAlarmReceiver.KIND_MORNING); rescheduleNext(c, CeyoAlarmReceiver.KIND_NIGHT); }
+    /** First run turns on morning (8:00), night (22:30) and friendly check-ins automatically; the user can change or switch them off. */
+    public static void autoSetup(Context c) {
+        SharedPreferences p = prefs(c);
+        if (p.getBoolean("auto_done", false)) return;
+        p.edit().putBoolean("auto_done", true).putBoolean("morning_on", true).putInt("morning_h", 8).putInt("morning_m", 0)
+            .putBoolean("night_on", true).putInt("night_h", 22).putInt("night_m", 30).putBoolean("nudge_on", true).commit();
+    }
+    /** Next friendly check-in: every ~4 hours, only between 10:00 and 21:00. */
+    public static long nextNudge(long now) {
+        Calendar cal = Calendar.getInstance(); cal.setTimeInMillis(now + 4L * 3600000L);
+        int h = cal.get(Calendar.HOUR_OF_DAY);
+        if (h < 10 || h >= 21) { if (h >= 21) cal.add(Calendar.DAY_OF_YEAR, 1); cal.set(Calendar.HOUR_OF_DAY, 10); cal.set(Calendar.MINUTE, 30); }
+        return cal.getTimeInMillis();
+    }
+    public static void scheduleNudge(Context c) {
+        if (!prefs(c).getBoolean("nudge_on", false)) return;
+        CeyoAlarmReceiver.schedule(c, CeyoAlarmReceiver.KIND_NUDGE, "nudge", "", "", "/", nextNudge(System.currentTimeMillis()));
+    }
+    public static void restoreAll(Context c) { autoSetup(c); rescheduleNext(c, CeyoAlarmReceiver.KIND_MORNING); rescheduleNext(c, CeyoAlarmReceiver.KIND_NIGHT); scheduleNudge(c); }
 }
