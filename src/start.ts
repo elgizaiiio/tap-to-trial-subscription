@@ -2,7 +2,18 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
+const bearerMiddleware = createMiddleware().client(async ({ next }) => {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return next({ headers: token ? { Authorization: `Bearer ${token}` } : {} });
+});
+
+const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
+  // Platform email routes authenticate themselves and must pass through untouched.
+  if (new URL(request.url).pathname.startsWith("/lovable/")) {
+    return next();
+  }
   try {
     return await next();
   } catch (error) {
@@ -24,12 +35,7 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
-// requestMiddleware runs on every request; functionMiddleware only on server functions, where
-// client sendContext is unvalidated input. Append to these arrays, never replace them.
-// Enabling Lovable Cloud adds functionMiddleware: [attachSupabaseAuth], the bearer token that
-// requireSupabaseAuth server functions need. Add it by hand only if Lovable Cloud or a
-// user-managed Supabase project is connected, no middleware here sets Authorization, and the
-// project did not intentionally replace it.
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware, csrfMiddleware],
+  functionMiddleware: [bearerMiddleware],
 }));

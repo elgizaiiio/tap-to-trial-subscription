@@ -1,0 +1,5 @@
+- Official channel credentials stay in service-only Supabase Vault and remain separate from the Telegram key-administration token. Why: a public user channel must not replace the operator bot or expose its credentials.
+- Pair external senders through expiring, single-use hashed links and owner-checked database consumption, never a supplied email or app user ID. Why: channel identities must prove access to the signed-in app account.
+- Never pass the service-role client to workspaceTools; external conversations currently use the owner-bound loop's built-in execution only. Why: integrations require caller-scoped RLS and app approval flows.
+- Persist receipt claims before model execution and do not automatically repeat ambiguous sends or interrupted external actions. Why: provider retries must not duplicate work.
+- X replies run by polling the official @Ceyobot DM inbox from the existing scheduler (ceyo-routines) with per-event claims in channel_deliveries; the X webhook route stays fail-closed. Why: X Chat webhooks need a persistent decrypting process, while DM polling works on the Worker.

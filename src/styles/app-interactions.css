@@ -1,0 +1,10 @@
+/* Restriction is intentionally host + phone scoped, and never protects secrets. */
+html[data-app-copy-restricted] body, html[data-app-copy-restricted] body * { user-select:none!important; -webkit-user-select:none!important; -webkit-touch-callout:none!important; }
+html[data-app-copy-restricted] input:not([readonly]):not(:disabled), html[data-app-copy-restricted] textarea:not([readonly]):not(:disabled), html[data-app-copy-restricted] [contenteditable]:not([contenteditable="false"]), html[data-app-copy-restricted] [contenteditable]:not([contenteditable="false"]) * { user-select:text!important; -webkit-user-select:text!important; -webkit-touch-callout:default!important; }
+@media (max-width:860px) {
+  .agent-hub, .cx-chat, .hub-search-overlay { animation:none!important; }
+  .ceyo-app-frame .cx-chat .cx-composer, .ceyo-app-frame .cx-chat .cx-glass { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; background:var(--cx-card); }
+  .agent-hub .hub-home-scroll, .cx-chat .cx-scroll { scroll-behavior:auto; }
+}
+html[data-perf="low"] .ag-orb, html[data-perf="low"] .ag-orb *, html[data-perf="low"] .hub-bot-avatar * { animation:none!important; filter:none!important; }
+html[data-perf="low"] .cx-sheet, html[data-perf="low"] .cx-pop { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
