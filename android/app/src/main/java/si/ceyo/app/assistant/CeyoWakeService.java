@@ -83,8 +83,8 @@ public class CeyoWakeService extends Service {
             }
             String tokens, keywords;
             try (java.io.InputStream a = getAssets().open("ceyo-voice/kws/tokens.txt"); java.io.InputStream b = getAssets().open("ceyo-voice/kws/keywords.txt")) {
-                tokens = new String(a.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                keywords = new String(b.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                tokens = readText(a);
+                keywords = readText(b);
             }
             if (!CeyoKeywords.valid(tokens, keywords)) throw new IllegalStateException("Keyword vocabulary mismatch");
             OnlineTransducerModelConfig t = new OnlineTransducerModelConfig();
@@ -144,6 +144,11 @@ public class CeyoWakeService extends Service {
             .setLargeIcon(CeyoRobot.bitmap(this, "talking", 128)).setContentIntent(CeyoIntents.listen(this, 902)).setAutoCancel(true));
         try { CeyoIntents.listen(this, 902).send(); } catch (Exception ignored) { }
         stopSelf();
+    }
+    private static String readText(java.io.InputStream in) throws java.io.IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream(); byte[] bytes = new byte[4096]; int n;
+        while ((n = in.read(bytes)) != -1) out.write(bytes, 0, n);
+        return out.toString("UTF-8");
     }
 
     @Override public void onDestroy() { running = false; if ("listening".equals(health(this))) health("off"); AudioRecord r = recorder; if (r != null) try { r.stop(); } catch (Exception ignored) {} super.onDestroy(); }
