@@ -1,4 +1,5 @@
 # Current requests (Nov 2026)
+- [x] Recover missing Android source or regenerate the trusted Capacitor shell; build and verify an AAB using the supplied upload key (2026-11-16 continuation). Regenerated source, native trial validation test, signed versionCode 3 / 1.0.2, bundletool validation and matching certificate.
 - [x] Import GitHub repo
 - [x] Android: subscribe opens Google Play immediately (no extra card step)
 - [x] Android-only splash loader
@@ -9,7 +10,7 @@
 - [ ] Web 3-day trial after card link with auto-charge (Kashier/Dodo)
 - [ ] Offline storage of pages/chats (extend registerSW + pageStateCache)
 - [ ] 20+ bundled languages (app currently English + Egyptian Arabic only; large translation job)
-- [ ] Signed AAB — blocked: android/app/src native code (MainActivity, Play Billing plugin, manifest) missing from repo; no Android SDK in sandbox
+- [x] Signed AAB — regenerated missing native code, installed temporary SDK/JDK, built and verified with the supplied upload key; delivered versionCode 3. Actual store upload/signing acceptance and device checkout are not verified.
 
 ## Emails, 3-day trial and Android Google sign-in — 2026-11-16
 - [ ] Branded sign-in/sign-up/password/email-change emails from notify.ceyo.si
