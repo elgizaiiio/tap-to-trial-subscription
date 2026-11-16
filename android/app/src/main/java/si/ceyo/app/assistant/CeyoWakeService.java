@@ -55,6 +55,7 @@ public class CeyoWakeService extends Service {
     public static void stop(Context c) { c.stopService(new Intent(c, CeyoWakeService.class)); }
 
     @Override public int onStartCommand(Intent in, int flags, int id) {
+        if (running) return START_NOT_STICKY;
         health("starting");
         CeyoChannels.ensure(this);
         NotificationCompat.Builder b = new NotificationCompat.Builder(this, CeyoChannels.LIVE).setSmallIcon(R.mipmap.ic_launcher)

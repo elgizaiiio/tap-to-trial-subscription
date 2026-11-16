@@ -14,7 +14,7 @@ public final class CeyoRecognizer {
         List<ResolveInfo> services = c.getPackageManager().queryIntentServices(new Intent(RecognitionService.SERVICE_INTERFACE), 0);
         ComponentName fallback = null;
         for (ResolveInfo r : services) {
-            if (r.serviceInfo == null || !external(c.getPackageName(), r.serviceInfo.packageName) || !r.serviceInfo.enabled || !r.serviceInfo.exported) continue;
+            if (r.serviceInfo == null || !external(c.getPackageName(), r.serviceInfo.packageName) || !r.serviceInfo.enabled || !r.serviceInfo.exported || r.serviceInfo.name.endsWith("CeyoRecognitionService")) continue;
             ComponentName service = new ComponentName(r.serviceInfo.packageName, r.serviceInfo.name);
             if (r.serviceInfo.packageName.contains("google")) return service;
             if (fallback == null) fallback = service;

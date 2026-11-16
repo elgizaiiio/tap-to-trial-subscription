@@ -80,28 +80,39 @@ public class MegsyBridge {
         try { if (Build.VERSION.SDK_INT >= 26) ctx().startForegroundService(i); else ctx().startService(i); } catch (Exception ignored) { } }
     @JavascriptInterface public void callEnded(String id) { if (!trusted()) return; ctx().stopService(new Intent(ctx(), CeyoCallService.class)); }
 
-    /** Ongoing "bot is working" notification (status-bar chip on phones that show live updates). */
-    @JavascriptInterface public void liveUpdate(String json) { if (!trusted()) return; JSONObject o = parse(json);
-        CeyoChannels.ensure(ctx());
-        String title = o.optString("title", "Ceyo شغال"), text = o.optString("text", "");
-        int progress = o.optInt("progress", -1);
-        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx(), CeyoChannels.LIVE).setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(title).setContentText(text).setOngoing(true).setOnlyAlertOnce(true).setRequestPromotedOngoing(true)
-            .setShortCriticalText("Ceyo").setCategory(NotificationCompat.CATEGORY_PROGRESS)
-            .setContentIntent(CeyoIntents.open(ctx(), "/", 801))
-            .setProgress(100, Math.max(progress, 0), progress < 0);
+    @JavascriptInterface public void setBotIdentity(String json) { if (trusted()) CeyoRobot.sync(ctx(), parse(json)); }
+    /** Compact robot + state, expanded robot + current action. Android/OEM owns the status-bar chip. */
+    @JavascriptInterface public void liveUpdate(String json) {
+        if (!trusted()) return; JSONObject o = parse(json); CeyoChannels.ensure(ctx());
+        String state = o.optString("state", "thinking"), title = o.optString("title", "يفكر…"), text = o.optString("text", "");
+        android.widget.RemoteViews compact = new android.widget.RemoteViews(ctx().getPackageName(), R.layout.ceyo_live_compact);
+        android.widget.RemoteViews expanded = new android.widget.RemoteViews(ctx().getPackageName(), R.layout.ceyo_live_expanded);
+        android.graphics.Bitmap robot = CeyoRobot.bitmap(ctx(), state, 128);
+        compact.setImageViewBitmap(R.id.live_robot, robot); compact.setTextViewText(R.id.live_state, title);
+        expanded.setImageViewBitmap(R.id.live_robot, robot); expanded.setTextViewText(R.id.live_state, o.optString("name", CeyoRobot.name(ctx())) + " · " + title); expanded.setTextViewText(R.id.live_detail, text);
+        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx(), CeyoChannels.LIVE).setSmallIcon(R.drawable.ceyo_notification_icon)
+            .setLargeIcon(robot).setContentTitle(title).setContentText(text).setOngoing(true).setOnlyAlertOnce(true)
+            .setCustomContentView(compact).setCustomBigContentView(expanded).setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setContentIntent(CeyoIntents.open(ctx(), o.optString("path", CeyoRobot.path(ctx())), 801));
+        // Custom RemoteViews are intentionally not advertised as Android 16 promoted live updates.
         CeyoAlarmReceiver.post(ctx(), 800, b);
-        CeyoWidget.setStatus(ctx(), title, text); }
-    @JavascriptInterface public void liveEnd(String json) { if (!trusted()) return; JSONObject o = parse(json);
-        ctx().getSystemService(NotificationManager.class).cancel(800);
-        String text = o.optString("text", "");
+        Routines.prefs(ctx()).edit().putString("bot_state", state).apply(); CeyoWidget.setStatus(ctx(), title, text);
+    }
+    @JavascriptInterface public void liveEnd(String json) {
+        if (!trusted()) return; JSONObject o = parse(json); ctx().getSystemService(NotificationManager.class).cancel(800);
+        String text = o.optString("text", ""), name = o.optString("title", CeyoRobot.name(ctx()));
         if (!text.isEmpty()) {
             CeyoChannels.ensure(ctx());
-            CeyoAlarmReceiver.post(ctx(), 802, new NotificationCompat.Builder(ctx(), CeyoChannels.UPDATES).setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(o.optString("title", "Ceyo خلص")).setContentText(text).setStyle(new NotificationCompat.BigTextStyle().bigText(text))
-                .setContentIntent(CeyoIntents.open(ctx(), "/", 803)).addAction(0, "🎙 رد بصوتك", CeyoIntents.listen(ctx(), 804)).setAutoCancel(true));
+            androidx.core.app.Person bot = new androidx.core.app.Person.Builder().setName(name)
+                .setIcon(androidx.core.graphics.drawable.IconCompat.createWithBitmap(CeyoRobot.bitmap(ctx(), "done", 128))).build();
+            CeyoAlarmReceiver.post(ctx(), 802, new NotificationCompat.Builder(ctx(), CeyoChannels.UPDATES).setSmallIcon(R.drawable.ceyo_notification_icon)
+                .setStyle(new NotificationCompat.MessagingStyle(new androidx.core.app.Person.Builder().setName("You").build()).addMessage(text, System.currentTimeMillis(), bot))
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE).setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setContentIntent(CeyoIntents.open(ctx(), o.optString("path", CeyoRobot.path(ctx())), 803))
+                .addAction(0, "رد بصوتك", CeyoIntents.listen(ctx(), 804)).setAutoCancel(true));
         }
-        CeyoWidget.setStatus(ctx(), o.optString("title", ""), text); }
+        Routines.prefs(ctx()).edit().putString("bot_state", "done").apply(); CeyoWidget.setStatus(ctx(), name, text);
+    }
     @JavascriptInterface public void widgetStatus(String json) { if (!trusted()) return; JSONObject o = parse(json); CeyoWidget.setStatus(ctx(), o.optString("title"), o.optString("text")); }
     @JavascriptInterface public void speak(String json) { if (!trusted()) return; JSONObject o = parse(json); CeyoSpeech.speak(ctx(), o.optString("text"), o.optString("lang", null)); }
     @JavascriptInterface public void stopSpeaking() { if (trusted()) CeyoSpeech.stop(); }
@@ -121,6 +132,7 @@ public class MegsyBridge {
         if (!key.equals("car_on") && !key.equals("guard_links") && !key.equals("guard_bills") && !key.equals("wake_on")) return;
         Routines.prefs(ctx()).edit().putBoolean(key, o.optBoolean("on")).apply();
         if (key.equals("wake_on")) {
+            if (o.optBoolean("on")) { new java.io.File(ctx().getFilesDir(), "wake_status").delete(); new java.io.File(ctx().getFilesDir(), "wake_init").delete(); }
             if (!o.optBoolean("on")) { CeyoWakeService.stop(ctx()); return; }
             if (activity.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED)
                 activity.runOnUiThread(() -> activity.requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 53));
@@ -146,6 +158,7 @@ public class MegsyBridge {
             s.put("assistant", assistant != null && assistant.startsWith(ctx().getPackageName()));
             s.put("screen_mode", p.getString("screen_mode", "notify"));
             s.put("bundled_voice", CeyoVoiceEngine.available(ctx()));
+            s.put("wake_status", CeyoWakeService.health(ctx()));
             if (Build.VERSION.SDK_INT >= 29) { android.app.role.RoleManager rm = activity.getSystemService(android.app.role.RoleManager.class);
                 s.put("screening", rm != null && rm.isRoleHeld(android.app.role.RoleManager.ROLE_CALL_SCREENING)); }
             for (String k : new String[]{"car_on", "guard_links", "guard_bills", "morning_on", "night_on", "wake_on"}) s.put(k, p.getBoolean(k, k.startsWith("guard")));

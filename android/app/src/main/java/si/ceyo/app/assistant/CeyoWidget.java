@@ -39,6 +39,7 @@ public class CeyoWidget extends AppWidgetProvider {
         String text = fresh ? p.getString("w_text", "") : "";
         for (int id : ids) {
             RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.ceyo_widget);
+            v.setImageViewBitmap(R.id.w_robot, CeyoRobot.bitmap(c, p.getString("bot_state", "idle"), 128));
             v.setTextViewText(R.id.w_mood, title.isEmpty() ? mood(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) : title);
             v.setTextViewText(R.id.w_text, text.isEmpty() ? "اضغط على الروبوت واتكلم" : text);
             v.setOnClickPendingIntent(R.id.w_robot, CeyoIntents.listen(c, 301));
