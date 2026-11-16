@@ -38,11 +38,6 @@ export async function sendTemplateEmail(
   to: string,
   options: SendTemplateEmailOptions = {}
 ): Promise<SendTemplateEmailResult> {
-  const apiKey = process.env['LOVABLE_API_KEY']
-  if (!apiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured')
-  }
-
   const template = TEMPLATES[templateName]
   if (!template) {
     throw new Error(
@@ -66,7 +61,20 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
+  // Hostinger SMTP (our own support@ceyo.si mailbox) when configured; managed email otherwise.
+  const smtp = hostingerSmtp()
+  if (smtp) {
+    const { WorkerMailer } = await import('worker-mailer')
+    await WorkerMailer.send(
+      { host: smtp.host, port: smtp.port, secure: smtp.port === 465, startTls: smtp.port !== 465, credentials: { username: smtp.user, password: smtp.pass }, authType: ['plain', 'login'] },
+      { from: { name: smtp.name, email: smtp.from }, to: { email: recipient }, subject, html, text, ...(options.replyTo ? { reply: { email: options.replyTo } } : {}) }
+    )
+    return { sent: true }
+  }
+
   try {
+    const apiKey = process.env['LOVABLE_API_KEY']
+    if (!apiKey) throw new Error('No email sender is configured')
     await sendLovableEmail(
       {
         to: recipient,
@@ -90,4 +98,12 @@ export async function sendTemplateEmail(
   }
 
   return { sent: true }
+}
+
+/** Reads Hostinger SMTP settings from the server secret store; null when not fully configured. */
+export function hostingerSmtp() {
+  const e = process.env
+  const host = e['HOSTINGER_SMTP_HOST'], user = e['HOSTINGER_SMTP_USER'], pass = e['HOSTINGER_SMTP_PASSWORD']
+  if (!host || !user || !pass) return null
+  return { host, user, pass, port: Number(e['HOSTINGER_SMTP_PORT'] || 465), from: e['HOSTINGER_SMTP_FROM'] || user, name: e['HOSTINGER_SMTP_SENDER_NAME'] || SITE_NAME }
 }
