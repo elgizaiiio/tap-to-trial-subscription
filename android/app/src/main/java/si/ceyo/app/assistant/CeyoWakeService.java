@@ -32,6 +32,8 @@ public class CeyoWakeService extends Service {
     private static final String[] ASSETS = {"encoder.onnx", "decoder.onnx", "joiner.onnx", "tokens.txt", "keywords.txt"};
 
     public static String health(Context c) {
+        java.io.File guard = new java.io.File(c.getFilesDir(), "wake_init");
+        if (guard.exists() && System.currentTimeMillis() - guard.lastModified() > 30000) return "failed";
         try { return new String(java.nio.file.Files.readAllBytes(new java.io.File(c.getFilesDir(), "wake_status").toPath()), java.nio.charset.StandardCharsets.UTF_8); } catch (Exception e) { return "off"; }
     }
     private void health(String value) {
@@ -43,10 +45,9 @@ public class CeyoWakeService extends Service {
     /** Must be called while the app is on screen (Android blocks starting the microphone from the background). */
     public static void start(Context c) {
         java.io.File guard = new java.io.File(c.getFilesDir(), "wake_init");
-        if (guard.exists() && !"starting".equals(health(c))) { // never mistake an in-flight initialization for a previous crash
-            guard.delete(); try { java.nio.file.Files.write(new java.io.File(c.getFilesDir(), "wake_status").toPath(), "failed".getBytes()); } catch (Exception ignored) {}
-            Routines.prefs(c).edit().putBoolean("wake_on", false).apply(); return;
-        }
+        // A marker is an in-flight or crashed JNI start. Never retry it automatically.
+        // Only an explicit user toggle clears it; after 30 seconds status reports the failure.
+        if (guard.exists()) return;
         if ("failed".equals(health(c))) return;
         if (!enabled(c) || c.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return;
         Intent i = new Intent(c, CeyoWakeService.class);
