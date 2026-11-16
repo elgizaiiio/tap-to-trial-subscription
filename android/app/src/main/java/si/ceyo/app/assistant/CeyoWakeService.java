@@ -78,6 +78,12 @@ public class CeyoWakeService extends Service {
                     if (asset.available() < (name.endsWith("onnx") ? 10000 : 10)) throw new IllegalStateException("Missing voice asset");
                 }
             }
+            String tokens, keywords;
+            try (java.io.InputStream a = getAssets().open("ceyo-voice/kws/tokens.txt"); java.io.InputStream b = getAssets().open("ceyo-voice/kws/keywords.txt")) {
+                tokens = new String(a.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                keywords = new String(b.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            }
+            if (!CeyoKeywords.valid(tokens, keywords)) throw new IllegalStateException("Keyword vocabulary mismatch");
             OnlineTransducerModelConfig t = new OnlineTransducerModelConfig();
             t.setEncoder("ceyo-voice/kws/encoder.onnx"); t.setDecoder("ceyo-voice/kws/decoder.onnx"); t.setJoiner("ceyo-voice/kws/joiner.onnx");
             OnlineModelConfig m = new OnlineModelConfig();
@@ -90,7 +96,7 @@ public class CeyoWakeService extends Service {
             try { guard.createNewFile(); } catch (Exception ignored) { }
             kws = new KeywordSpotter(getAssets(), cfg);
             stream = kws.createStream("");
-            guard.delete();
+            // Keep the marker for the entire native lifetime, not just initialization.
             int size = Math.max(AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT), 3200);
             rec = new AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size * 2);
             recorder = rec;
@@ -107,7 +113,10 @@ public class CeyoWakeService extends Service {
                 stream.acceptWaveform(n == samples.length ? samples : java.util.Arrays.copyOf(samples, n), 16000);
                 while (kws.isReady(stream)) kws.decode(stream);
                 String hit = kws.getResult(stream).getKeyword();
-                if (hit != null && !hit.isEmpty()) { kws.reset(stream); woke(); break; }
+                if (hit != null && !hit.isEmpty()) {
+                    rec.stop(); rec.release(); rec = null; recorder = null;
+                    woke(); break;
+                }
             }
         } catch (Throwable error) {
             if (running) health("failed");

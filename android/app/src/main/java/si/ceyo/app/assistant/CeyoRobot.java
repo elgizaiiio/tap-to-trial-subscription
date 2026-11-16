@@ -29,15 +29,19 @@ public final class CeyoRobot {
         float pulse = state.equals("idle") ? 0 : (float)Math.sin(phase) * s * .015f;
         canvas.drawCircle(cx, cy, s * .39f + pulse, p);
         p.setShader(null); p.setColor(c.getColor(R.color.ceyo_robot_eyes));
-        if (state.equals("thinking") || state.equals("tool") || state.equals("talking")) {
+        if (state.equals("talking")) {
             for (int i = 0; i < 5; i++) {
                 float h = s * (.08f + .09f * (float)Math.abs(Math.sin(phase + i * .8)));
                 float x = s * (.32f + .075f * i);
                 canvas.drawRoundRect(x, cy - h / 2, x + s * .034f, cy + h / 2, s * .02f, s * .02f, p);
             }
         } else {
-            float h = state.equals("done") ? s * .075f : s * .18f;
+            float h = state.equals("done") ? s * .075f : state.equals("thinking") ? s * .12f : s * .18f;
             for (float x : new float[]{s * .37f, s * .56f}) canvas.drawRoundRect(x, cy - h / 2, x + s * .07f, cy + h / 2, s * .04f, s * .04f, p);
+            if (state.equals("thinking") || state.equals("tool")) {
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(s * .018f);
+                canvas.drawArc(s * .06f, s * .06f, s * .94f, s * .94f, phase * 45, state.equals("tool") ? 140 : 65, false, p);
+            }
         }
     }
     public static class Animated extends View {

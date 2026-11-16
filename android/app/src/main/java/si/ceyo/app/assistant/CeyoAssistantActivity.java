@@ -27,6 +27,7 @@ public class CeyoAssistantActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private int retries;
     private boolean leaving;
+    private int handoverChecks;
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
@@ -41,11 +42,11 @@ public class CeyoAssistantActivity extends Activity {
         TextView name = new TextView(this); name.setText(CeyoRobot.name(this)); name.setTextSize(18); name.setTextColor(getColor(R.color.ceyo_sheet_text)); sheet.addView(name);
         live = new TextView(this); live.setTextColor(getColor(R.color.ceyo_sheet_muted)); live.setTextSize(16); live.setGravity(Gravity.CENTER); live.setPadding(0, dp(12), 0, dp(16)); sheet.addView(live);
         LinearLayout controls = new LinearLayout(this); controls.setGravity(Gravity.CENTER);
-        Button retry = new Button(this); retry.setText("🎙"); retry.setContentDescription("اتكلم"); retry.setOnClickListener(v -> { retries = 0; start(); }); controls.addView(retry);
-        Button chat = new Button(this); chat.setText("افتح المحادثة"); chat.setOnClickListener(v -> openApp("", false)); controls.addView(chat); sheet.addView(controls);
+        ImageButton retry = icon(android.R.drawable.ic_btn_speak_now, "اتكلم"); retry.setOnClickListener(v -> { retries = 0; start(); }); controls.addView(retry, new LinearLayout.LayoutParams(dp(56), dp(56)));
+        ImageButton chat = icon(android.R.drawable.ic_menu_view, "افتح المحادثة"); chat.setOnClickListener(v -> openApp("", false)); controls.addView(chat, new LinearLayout.LayoutParams(dp(56), dp(56))); sheet.addView(controls);
         LinearLayout textRow = new LinearLayout(this);
         input = new EditText(this); input.setHint("اكتب رسالتك"); input.setTextColor(getColor(R.color.ceyo_sheet_text)); input.setHintTextColor(getColor(R.color.ceyo_sheet_muted)); input.setMaxLines(3); textRow.addView(input, new LinearLayout.LayoutParams(0, -2, 1));
-        Button send = new Button(this); send.setText("↑"); send.setContentDescription("إرسال"); send.setOnClickListener(v -> { String words = input.getText().toString().trim(); if (!words.isEmpty()) openApp(words, true); }); textRow.addView(send); sheet.addView(textRow);
+        ImageButton send = icon(android.R.drawable.ic_menu_send, "إرسال"); send.setOnClickListener(v -> { String words = input.getText().toString().trim(); if (!words.isEmpty()) openApp(words, true); }); textRow.addView(send, new LinearLayout.LayoutParams(dp(48), dp(48))); sheet.addView(textRow);
         LinearLayout root = new LinearLayout(this); root.setGravity(Gravity.BOTTOM); root.setOnClickListener(v -> finish()); root.addView(sheet, new LinearLayout.LayoutParams(-1, -2)); sheet.setOnClickListener(v -> {}); setContentView(root);
         CeyoWakeService.stop(this);
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 41);
@@ -57,8 +58,20 @@ public class CeyoAssistantActivity extends Activity {
         else live.setText("الميكروفون غير متاح — تقدر تكتب");
     }
     private void destroyRecognizer() { if (recognizer != null) { try { recognizer.cancel(); recognizer.destroy(); } catch (Exception ignored) {} recognizer = null; } }
+    private ImageButton icon(int resource, String label) {
+        ImageButton b = new ImageButton(this); b.setImageResource(resource); b.setContentDescription(label);
+        b.setImageTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.ceyo_sheet_text)));
+        android.util.TypedValue value = new android.util.TypedValue(); getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, value, true);
+        b.setBackgroundResource(value.resourceId); b.setPadding(dp(12), dp(12), dp(12), dp(12)); return b;
+    }
     private void start() {
         if (leaving || isFinishing()) return;
+        // stopService is asynchronous in :wake. Wait until its AudioRecord is released.
+        if (new java.io.File(getFilesDir(), "wake_init").exists()) {
+            if (handoverChecks++ < 20) { live.setText("بجهز الميكروفون…"); handler.postDelayed(this::start, 100); return; }
+            live.setText("الميكروفون مشغول — تقدر تكتب أو تحاول تاني"); return;
+        }
+        handoverChecks = 0;
         destroyRecognizer();
         ComponentName service = CeyoRecognizer.find(this);
         if (service == null) { live.setText("التعرف على الكلام غير متاح على الهاتف — تقدر تكتب"); orb.state("idle"); return; }
@@ -93,6 +106,6 @@ public class CeyoAssistantActivity extends Activity {
         if (!text.isEmpty()) path += (path.contains("?") ? "&" : "?") + "ceyoSend=" + (send ? "1" : "0") + "&ceyoPrompt=" + Uri.encode(text);
         startActivity(CeyoIntents.openIntent(this, path)); finish();
     }
-    @Override protected void onPause() { destroyRecognizer(); super.onPause(); }
+    @Override protected void onPause() { handler.removeCallbacksAndMessages(null); destroyRecognizer(); super.onPause(); }
     @Override protected void onDestroy() { handler.removeCallbacksAndMessages(null); destroyRecognizer(); super.onDestroy(); }
 }
