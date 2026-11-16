@@ -26,6 +26,9 @@ public final class CeyoVoiceEngine {
     private CeyoVoiceEngine() {}
 
     public static boolean available(Context c) {
+        if (new File(c.getFilesDir(), "tts_broken").exists()) return false;
+        File g = new File(c.getFilesDir(), "tts_init");
+        if (g.exists()) { g.delete(); try { new File(c.getFilesDir(), "tts_broken").createNewFile(); } catch (Exception ignored) { } return false; }
         try { c.getAssets().open("ceyo-voice/tts/model.onnx").close(); return true; } catch (Exception e) { return false; }
     }
 
@@ -43,7 +46,9 @@ public final class CeyoVoiceEngine {
         model.setNumThreads(2);
         OfflineTtsConfig cfg = new OfflineTtsConfig();
         cfg.setModel(model);
+        File g = new File(c.getFilesDir(), "tts_init"); g.createNewFile();
         tts = new OfflineTts(c.getAssets(), cfg);
+        g.delete();
         return tts;
     }
 
