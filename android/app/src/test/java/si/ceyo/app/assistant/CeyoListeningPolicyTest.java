@@ -12,4 +12,8 @@ public class CeyoListeningPolicyTest {
         assertEquals(8000, CeyoListeningPolicy.retryDelay(8, 3));
         assertEquals(-1, CeyoListeningPolicy.retryDelay(8, 4));
     }
+    @org.junit.Test public void describesMicrophoneAndPermissionErrors() {
+        org.junit.Assert.assertEquals("الميكروفون مستخدم أو مقفول", CeyoListeningPolicy.describe(3));
+        org.junit.Assert.assertEquals("اسمح بالميكروفون لتطبيق Google وCeyo", CeyoListeningPolicy.describe(9));
+    }
 }
