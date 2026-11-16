@@ -73,10 +73,9 @@ public class CeyoAssistantActivity extends Activity {
         if (CeyoWakeService.micBusy(this) && handoverChecks++ < 15) { live.setText("بجهز الميكروفون…"); handler.postDelayed(this::start, 100); return; }
         handoverChecks = 0;
         destroyRecognizer();
-        ComponentName service = CeyoRecognizer.find(this);
-        if (service == null) { unavailable("خدمة التعرف على الكلام غير متاحة على الهاتف"); return; }
         try {
-            recognizer = SpeechRecognizer.createSpeechRecognizer(this, service);
+            recognizer = CeyoRecognizer.create(this);
+            if (recognizer == null) { unavailable("خدمة التعرف على الكلام غير متاحة — ثبّت Speech Services by Google"); return; }
             live.setText("بسمعك…"); orb.state("talking");
             recognizer.setRecognitionListener(new RecognitionListener() {
                 public void onReadyForSpeech(Bundle p) { live.setText("بسمعك…"); }

@@ -70,4 +70,17 @@ public final class Sentinel {
         if (host.chars().filter(c -> c == '-').count() >= 3) return "hyphens";
         return null;
     }
+
+    private static final Pattern SPEND_WORDS = Pattern.compile(
+        "(خصم|تم خصم|شراء|عملية شراء|سحب|دفع|مدفوعات|purchase|debited|spent|withdrawal|paid|charged|pos)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern REFUND = Pattern.compile("(استرداد|إيداع|ايداع|تحويل وارد|refund|credited|deposit|received)", Pattern.CASE_INSENSITIVE);
+
+    /** Amount spent according to a bank/wallet notification, or -1 when the text is not a purchase/debit. */
+    public static double detectSpend(String text) {
+        if (text == null || text.length() > 2000 || !SPEND_WORDS.matcher(text).find() || REFUND.matcher(text).find()) return -1;
+        Matcher m = AMOUNT.matcher(text);
+        if (!m.find()) return -1;
+        String amount = m.group(2) != null ? m.group(2) : m.group(3);
+        try { return Double.parseDouble(amount.replace(",", ".")); } catch (Exception e) { return -1; }
+    }
 }

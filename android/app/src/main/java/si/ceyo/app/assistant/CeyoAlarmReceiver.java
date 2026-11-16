@@ -13,7 +13,8 @@ import si.ceyo.app.R;
 
 /** Fires scheduled alarms, reminders, bot calls and daily routines (morning briefing / night reflection). */
 public class CeyoAlarmReceiver extends BroadcastReceiver {
-    public static final String KIND_ALARM = "alarm", KIND_REMINDER = "reminder", KIND_CALL = "call", KIND_MORNING = "morning", KIND_NIGHT = "night";
+    public static final String KIND_ALARM = "alarm", KIND_REMINDER = "reminder", KIND_CALL = "call", KIND_MORNING = "morning", KIND_NIGHT = "night", KIND_NUDGE = "nudge";
+    private static final String[] NUDGES = {"واحشني والله، فينك كده؟ 👀", "عامل إيه النهارده؟ لو محتاج حاجة أنا هنا", "خد استراحة صغيرة واشرب مية 💧", "إيه أخبار اللي كنت شغال عليه؟ أساعدك؟", "بقالك فترة مكلمتنيش، كل حاجة تمام؟"};
 
     static PendingIntent pi(Context c, String kind, String id, String title, String extra, String path) {
         Intent i = new Intent(c, CeyoAlarmReceiver.class).setAction("si.ceyo.app.FIRE." + kind)
@@ -25,6 +26,7 @@ public class CeyoAlarmReceiver extends BroadcastReceiver {
         AlarmManager am = c.getSystemService(AlarmManager.class);
         PendingIntent p = pi(c, kind, id, title, extra, path);
         boolean exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms();
+        if (KIND_NUDGE.equals(kind)) { am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, p); return; }
         if (exact && !KIND_REMINDER.equals(kind)) am.setAlarmClock(new AlarmManager.AlarmClockInfo(at, CeyoIntents.open(c, path, 7)), p);
         else if (exact) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, p);
         else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, p);
@@ -40,7 +42,10 @@ public class CeyoAlarmReceiver extends BroadcastReceiver {
         String id = String.valueOf(in.getStringExtra("id"));
         String title = in.getStringExtra("title");
         String path = CeyoIntents.safePath(in.getStringExtra("path"));
-        if (KIND_REMINDER.equals(kind)) {
+        if (KIND_NUDGE.equals(kind)) {
+            Routines.scheduleNudge(c);
+            CeyoMessage.post(c, 830, null, NUDGES[(int) (System.currentTimeMillis() / 3600000L % NUDGES.length)], CeyoRobot.path(c));
+        } else if (KIND_REMINDER.equals(kind)) {
             notify(c, id.hashCode(), CeyoChannels.UPDATES, "Ceyo", title, path);
         } else if (KIND_CALL.equals(kind)) {
             showIncomingCall(c, id, title, in.getStringExtra("extra"), path);
@@ -50,6 +55,7 @@ public class CeyoAlarmReceiver extends BroadcastReceiver {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent full = PendingIntent.getActivity(c, id.hashCode(), ring, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             boolean night = KIND_NIGHT.equals(kind);
+            if (night) { CeyoMessage.post(c, ("routine" + kind).hashCode(), null, "قبل ما تنام 🌙 في أفكار عايز تفضّيها؟ قولي يومك كان عامل إزاي", CeyoRobot.path(c)); return; }
             NotificationCompat.Builder b = new NotificationCompat.Builder(c, night ? CeyoChannels.UPDATES : CeyoChannels.ALARMS)
                 .setSmallIcon(R.mipmap.ic_launcher).setContentTitle(night ? "Ceyo · قبل النوم" : "Ceyo · صباح الخير")
                 .setContentText(night ? "في أفكار عايز تفضّيها قبل ما تنام؟" : "اضغط عشان أقولك ملخص يومك")

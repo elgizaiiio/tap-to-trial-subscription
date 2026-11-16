@@ -117,6 +117,7 @@ function PhoneSettings({ nav }: { nav: Nav }) {
     <Shell title="Phone settings" back={() => nav("/settings")}>
     <Group title="Voice check">
       <Row label="Test voice now" sub={st.recognizer === false ? "No speech service found — install or update the Google app" : "Opens the top island and listens; any problem is shown there"} onClick={() => phoneOpenSettings("test_voice")} />
+      <Row label="Speech engine" sub={st.recognizers ? `Found: ${st.recognizers}` : "None found — install Speech Services by Google from Play Store"} value={st.recognizer_name || "Missing"} right={<span />} />
       <Row label="Show over other apps" sub="Needed so the robot appears at the top when you call it" value={st.overlay ? "Allowed" : "Allow"} onClick={() => { phoneOpenSettings("overlay"); later(); }} />
       <Row label="Run in background" sub="Stops the phone from closing the listener to save battery" value={st.battery ? "Allowed" : "Allow"} onClick={() => { phoneOpenSettings("battery"); later(); }} />
     </Group>
@@ -128,6 +129,7 @@ function PhoneSettings({ nav }: { nav: Nav }) {
       <Row label="Night reflection" value={st.night_on ? `${pad(st.night_h)}:${pad(st.night_m)}` : "Off"} onClick={() => st.night_on ? (phoneRoutine("night", st.night_h ?? 23, st.night_m ?? 0, false), later()) : pickTime("night", st.night_h ?? 23, st.night_m ?? 0)} />
       <Row label="Driving mode" sub="Greets you when the car's Bluetooth connects" checked={!!st.car_on} right={<Toggle on={!!st.car_on} />} onClick={() => toggle("car_on")} />
       <Row label="Notification guard" sub="Bills and scam links, checked on the phone" value={st.listener ? "On" : "Set up"} onClick={() => phoneOpenSettings("listener")} />
+      <Row label="Spent today" sub="From bank and wallet notifications, counted on the phone" value={String(Math.round(st.spent_today ?? 0))} right={<span />} />
       <Row label="Scam link alerts" checked={!!st.guard_links} right={<Toggle on={!!st.guard_links} />} onClick={() => toggle("guard_links")} />
       <Row label="Bill reminders" checked={!!st.guard_bills} right={<Toggle on={!!st.guard_bills} />} onClick={() => toggle("guard_bills")} />
       <Row label="Unknown callers" sub={st.screening === false && st.screen_mode !== "off" ? "Allow Ceyo as call screener" : "Numbers not in your contacts"} value={modeName[st.screen_mode || "notify"]} onClick={() => { phoneScreenMode(nextMode); later(); }} />

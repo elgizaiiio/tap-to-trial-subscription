@@ -33,7 +33,7 @@ public class MainActivity extends BridgeActivity {
         handleLaunch(getIntent());
     }
 
-    @Override public void onResume() { super.onResume(); si.ceyo.app.assistant.CeyoWakeService.start(this); }
+    @Override public void onResume() { super.onResume(); si.ceyo.app.assistant.CeyoWakeService.start(this); si.ceyo.app.assistant.Routines.restoreAll(this); }
 
     @Override public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
         super.onRequestPermissionsResult(code, perms, res);
@@ -49,7 +49,14 @@ public class MainActivity extends BridgeActivity {
     private void handleLaunch(Intent in) {
         if (in == null) return;
         String path = null;
-        if (in.hasExtra(CeyoIntents.EXTRA_PATH)) path = CeyoIntents.safePath(in.getStringExtra(CeyoIntents.EXTRA_PATH));
+        Bundle typed = androidx.core.app.RemoteInput.getResultsFromIntent(in);
+        CharSequence reply = typed == null ? null : typed.getCharSequence(si.ceyo.app.assistant.CeyoMessage.REPLY_KEY);
+        if (reply != null && reply.toString().trim().length() > 0) {
+            getSystemService(android.app.NotificationManager.class).cancel(in.getIntExtra("reply_nid", 0));
+            String base = CeyoIntents.safePath(in.getStringExtra(CeyoIntents.EXTRA_PATH));
+            String t = reply.toString().trim(); if (t.length() > 1200) t = t.substring(0, 1200);
+            path = base + (base.contains("?") ? "&" : "?") + "ceyoSend=1&ceyoPrompt=" + Uri.encode(t);
+        } else if (in.hasExtra(CeyoIntents.EXTRA_PATH)) path = CeyoIntents.safePath(in.getStringExtra(CeyoIntents.EXTRA_PATH));
         else if (Intent.ACTION_SEND.equals(in.getAction())) {
             CharSequence shared = in.getCharSequenceExtra(Intent.EXTRA_TEXT);
             String subject = in.getStringExtra(Intent.EXTRA_SUBJECT);

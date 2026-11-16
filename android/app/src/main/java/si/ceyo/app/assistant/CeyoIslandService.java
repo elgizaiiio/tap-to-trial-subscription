@@ -76,10 +76,9 @@ public class CeyoIslandService extends Service {
         // The wake engine marks the microphone while it owns it; wait briefly, then try anyway instead of blaming another app.
         if (CeyoWakeService.micBusy(this) && micWaits++ < 15) { status("بجهز الميكروفون…", "thinking"); handler.postDelayed(this::listen, 100); return; }
         micWaits = 0; destroyRecognizer();
-        ComponentName svc = CeyoRecognizer.find(this);
-        if (svc == null) { fail("مفيش خدمة تعرف على الكلام — ثبّت تطبيق Google"); return; }
         try {
-            recognizer = SpeechRecognizer.createSpeechRecognizer(this, svc);
+            recognizer = CeyoRecognizer.create(this);
+            if (recognizer == null) { fail("مفيش خدمة تعرف على الكلام — ثبّت Speech Services by Google"); return; }
             recognizer.setRecognitionListener(new RecognitionListener() {
                 public void onReadyForSpeech(Bundle p) { status("بسمعك… اتكلم", "talking"); cue(ToneGenerator.TONE_PROP_BEEP); }
                 public void onBeginningOfSpeech() { retries = 0; }
