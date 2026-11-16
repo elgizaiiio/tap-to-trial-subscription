@@ -1,24 +1,25 @@
 # Current requests (Nov 2026)
-- [ ] Owner requested direct Play update on the existing closed-testing track; inspect live access/products/tracks, preserve testers and report acceptance or exact blocker.
+- [ ] Direct Play update: Google rejected versionCode 3 because the supplied signing key is not the registered upload key; needs the original upload key or owner-approved Play Console upload-key reset. Existing alpha closed-testing release remains versionCode 2; no tester lists changed.
 - [x] Recover missing Android source or regenerate the trusted Capacitor shell; build and verify an AAB using the supplied upload key (2026-11-16 continuation). Regenerated source, native trial validation test, signed versionCode 3 / 1.0.2, bundletool validation and matching certificate.
 - [x] Import GitHub repo
 - [x] Android: subscribe opens Google Play immediately (no extra card step)
 - [x] Android-only splash loader
 - [x] Play 3-day free trial offer definition (+test)
-- [ ] Push trial offer to Play Console (needs owner go-ahead; live store change)
+- [x] Activate and independently read back P3D free-trial-3d offers on all four existing Google Play products; existing prices and discount offers unchanged.
 - [x] App emails send through Hostinger SMTP (support@ceyo.si); templates already use landing style
-- [x] Hostinger SMTP secrets saved (live send test pending after publish)
-- [ ] Web 3-day trial after card link with auto-charge (Kashier/Dodo)
-- [ ] Offline storage of pages/chats (extend registerSW + pageStateCache)
-- [ ] 20+ bundled languages (app currently English + Egyptian Arabic only; large translation job)
+- [x] Hostinger SMTP login and four template-review sends accepted using the documented smtp.hostinger.com:465 endpoint; inbox delivery not independently verified. Runtime sender now uses that endpoint instead of the invalid saved hostname.
+- [ ] Web card-bound auto-renewing trial: Dodo/operator credentials and hosted subscription verification access unavailable; no web free access granted.
+- [x] Android public design-file cache: bounded same-origin fingerprinted public/immutable assets only; page HTML, private chats, account and payment responses are never cached.
+- [ ] Full offline launch and encrypted private-chat sync remain unimplemented; native shell still loads HTTPS and requires first-page network access.
+- [x] Bundle 26 interface languages, 24 new machine-translated dictionaries covering 2,732 existing strings each; connect settings choice to actual translation, startup persistence and RTL. Human language review remains pending.
 - [x] Signed AAB — regenerated missing native code, installed temporary SDK/JDK, built and verified with the supplied upload key; delivered versionCode 3. Actual store upload/signing acceptance and device checkout are not verified.
 
 ## Emails, 3-day trial and Android Google sign-in — 2026-11-16
-- [ ] Branded sign-in/sign-up/password/email-change emails from notify.ceyo.si
-- [ ] Welcome email in the landing page look; welcome + task-ready emails send automatically
-- [ ] Send every email design to elgizaoffical@gmail.com for review
-- [ ] 3-day free trial for every new user, enforced on the server
-- [ ] Android app opens Google sign-in directly, no extra tap
+- [ ] Hosted Auth sender/templates activation: needs Supabase Management credential; Hostinger transactional sender verified separately. No claim of notify.ceyo.si activation.
+- [ ] Welcome + task-ready automatic dispatch still requires a persistent notification delivery integration; current templates and SMTP review sends alone do not implement it.
+- [x] Hostinger accepted auth, welcome, task-ready and account-notice template previews to elgizaoffical@gmail.com; inbox receipt unverified.
+- [ ] Web 3-day trial activation remains blocked by payment/operator access; Google Play trial eligibility and payment-method confirmation are store enforced.
+- [x] Existing Android Google button uses one-click system-browser PKCE; no provider confirmation card in source. Actual device return and provider setup unverified.
 
 ## Phone performance, copy policy and desktop workspace — 2026-11-16
 - [x] Scope copy/selection restrictions to app.ceyo.si on phones, preserving editable fields and unrestricted web/desktop use.
