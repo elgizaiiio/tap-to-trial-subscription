@@ -3,6 +3,7 @@ import { toast } from "sonner";
 /** Grok-style home for Ceyo bots and multi-bot groups, backed by real AgentSky chats. */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { capturePhonePrompt } from "@/lib/native/assistantBridge";
 import {
   ChevronDown,
   ChevronLeft,
@@ -205,6 +206,15 @@ export default function AgentHubPage({ demo = false }: { demo?: boolean }) {
     updateLocal((current) => ({ ...current, unread: current.unread.filter((k) => k !== key), seen: { ...current.seen, [key]: new Date().toISOString() } }));
     go(next);
   }, [go, local.groups, ws.sessions, updateLocal]);
+
+  // The phone handed over a prompt: open the main assistant in a new chat so its message box can take it.
+  const phonePrompt = useRef<boolean | null>(null);
+  if (phonePrompt.current === null) phonePrompt.current = !demo && !!capturePhonePrompt();
+  useEffect(() => {
+    if (!phonePrompt.current || !ws.ready || !storageReady || !primary) return;
+    phonePrompt.current = false;
+    if (!chatTarget) openChat("bot", primary.id, false, null);
+  }, [ws.ready, storageReady, primary, chatTarget, openChat]);
 
   const latestFor = useCallback((agentId: string) => ws.sessions.find((session) => session.agentId === agentId), [ws.sessions]);
 
