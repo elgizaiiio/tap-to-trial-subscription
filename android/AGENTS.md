@@ -7,3 +7,4 @@
 - Android Google uses system-browser PKCE and /auth/native-return → ceyo://auth/callback. Why: no Google WebView or session tokens in links.
 - Assistant features live in si.ceyo.app.assistant and talk to the web only through `MegsyBridge` (`window.MegsyAndroid`), which answers pages from https://app.ceyo.si only; phone→web hand-offs are relative paths with `ceyoPrompt`/`ceyoSend`. Why: no arbitrary-origin native access and one bridge contract (docs/android-bridge.md).
 - Notification reading for bills/scam links runs on-device in `Sentinel` and never uploads messages; it only works after the user enables the listener. Why: privacy and Play policy.
+- On-phone voice uses sherpa-onnx (wake word + bundled Piper Arabic voice); the AAR and model.onnx exceed the repo file limit, so run scripts/fetch-android-voice.sh before building. Why: free, offline, no vendor key, repository stays committable.

@@ -64,13 +64,17 @@ export function phoneSpeak(text: string, lang?: string): boolean {
 export function phoneRoutine(kind: "morning" | "night", hour: number, minute: number, on: boolean): void {
   const a = api(); if (a?.setRoutine) safe(() => a.setRoutine!(JSON.stringify({ kind, hour, minute, on })));
 }
-export function phoneOption(key: "car_on" | "guard_links" | "guard_bills", on: boolean): void {
+export function phoneOption(key: "car_on" | "guard_links" | "guard_bills" | "wake_on", on: boolean): void {
   const a = api(); if (a?.setOption) safe(() => a.setOption!(JSON.stringify({ key, on })));
+}
+export type ScreenMode = "off" | "notify" | "silence";
+export function phoneScreenMode(value: ScreenMode): void {
+  const a = api(); if (a?.setOption) safe(() => a.setOption!(JSON.stringify({ key: "screen_mode", value })));
 }
 export function phoneOpenSettings(which: "assistant" | "listener" | "notifications" | "alarms"): void {
   const a = api(); if (a?.openSettings) safe(() => a.openSettings!(which));
 }
-export type PhoneAssistantStatus = Partial<Record<"notifications" | "listener" | "assistant" | "car_on" | "guard_links" | "guard_bills" | "morning_on" | "night_on", boolean>> & Partial<Record<"morning_h" | "morning_m" | "night_h" | "night_m" | "digest_count", number>>;
+export type PhoneAssistantStatus = Partial<Record<"notifications" | "listener" | "assistant" | "car_on" | "guard_links" | "guard_bills" | "morning_on" | "night_on" | "wake_on" | "screening" | "bundled_voice", boolean>> & { screen_mode?: ScreenMode } & Partial<Record<"morning_h" | "morning_m" | "night_h" | "night_m" | "digest_count", number>>;
 export function phoneStatus(): PhoneAssistantStatus | null {
   const a = api(); if (!a?.status) return null;
   try { return JSON.parse(a.status()) as PhoneAssistantStatus; } catch { return null; }

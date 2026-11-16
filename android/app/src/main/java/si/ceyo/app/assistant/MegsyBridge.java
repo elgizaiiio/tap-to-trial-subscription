@@ -56,7 +56,18 @@ public class MegsyBridge {
         CeyoAlarmReceiver.schedule(ctx(), CeyoAlarmReceiver.KIND_REMINDER, o.optString("id"), o.optString("title"), "", o.optString("path", "/"), o.optLong("at")); }
     @JavascriptInterface public void cancel(String id) { if (!trusted()) return;
         CeyoAlarmReceiver.cancel(ctx(), CeyoAlarmReceiver.KIND_ALARM, id); CeyoAlarmReceiver.cancel(ctx(), CeyoAlarmReceiver.KIND_REMINDER, id); }
-    @JavascriptInterface public void requestPushToken() { /* push needs a Firebase project; not configured yet */ }
+    @JavascriptInterface public void requestPushToken() { if (!trusted()) return;
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(ctx()).isEmpty() && com.google.firebase.FirebaseApp.initializeApp(ctx()) == null) return;
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MegsyBridge::dispatchPushToken);
+        } catch (Throwable ignored) { /* push not configured in this build */ } }
+
+    public static void dispatchPushToken(String token) {
+        WebView w = current.get();
+        if (w == null || token == null) return;
+        String safe = token.replaceAll("[^A-Za-z0-9_:\\-]", "");
+        w.post(() -> w.evaluateJavascript("window.megsyNativePushToken&&window.megsyNativePushToken('" + safe + "')", null));
+    }
 
     @JavascriptInterface public void scheduleCall(String json) { if (!trusted()) return; JSONObject o = parse(json);
         CeyoAlarmReceiver.schedule(ctx(), CeyoAlarmReceiver.KIND_CALL, o.optString("id"), o.optString("botName"), o.optString("kind"), o.optString("path", "/"), o.optLong("at")); }
@@ -100,10 +111,31 @@ public class MegsyBridge {
         Routines.set(ctx(), kind, Math.max(0, Math.min(23, o.optInt("hour", 7))), Math.max(0, Math.min(59, o.optInt("minute", 0))), o.optBoolean("on")); }
     @JavascriptInterface public void setOption(String json) { if (!trusted()) return; JSONObject o = parse(json);
         String key = o.optString("key");
-        if (!key.equals("car_on") && !key.equals("guard_links") && !key.equals("guard_bills")) return;
+        if (key.equals("screen_mode")) {
+            String mode = o.optString("value", "notify");
+            if (!mode.matches("off|notify|silence")) return;
+            Routines.prefs(ctx()).edit().putString("screen_mode", mode).apply();
+            if (!"off".equals(mode)) activity.runOnUiThread(this::requestScreeningRole);
+            return;
+        }
+        if (!key.equals("car_on") && !key.equals("guard_links") && !key.equals("guard_bills") && !key.equals("wake_on")) return;
         Routines.prefs(ctx()).edit().putBoolean(key, o.optBoolean("on")).apply();
+        if (key.equals("wake_on")) {
+            if (!o.optBoolean("on")) { CeyoWakeService.stop(ctx()); return; }
+            if (activity.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED)
+                activity.runOnUiThread(() -> activity.requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 53));
+            else activity.runOnUiThread(() -> CeyoWakeService.start(activity));
+            return;
+        }
         if (key.equals("car_on") && o.optBoolean("on") && Build.VERSION.SDK_INT >= 31)
             activity.runOnUiThread(() -> activity.requestPermissions(new String[]{"android.permission.BLUETOOTH_CONNECT"}, 52)); }
+    private void requestScreeningRole() {
+        if (Build.VERSION.SDK_INT < 29) return;
+        android.app.role.RoleManager rm = activity.getSystemService(android.app.role.RoleManager.class);
+        if (rm != null && rm.isRoleAvailable(android.app.role.RoleManager.ROLE_CALL_SCREENING) && !rm.isRoleHeld(android.app.role.RoleManager.ROLE_CALL_SCREENING))
+            activity.startActivityForResult(rm.createRequestRoleIntent(android.app.role.RoleManager.ROLE_CALL_SCREENING), 54);
+    }
+
     @JavascriptInterface public String status() { if (!trusted()) return "{}";
         try {
             JSONObject s = new JSONObject();
@@ -112,7 +144,11 @@ public class MegsyBridge {
             s.put("listener", NotificationManagerCompat.getEnabledListenerPackages(ctx()).contains(ctx().getPackageName()));
             String assistant = Settings.Secure.getString(ctx().getContentResolver(), "voice_interaction_service");
             s.put("assistant", assistant != null && assistant.startsWith(ctx().getPackageName()));
-            for (String k : new String[]{"car_on", "guard_links", "guard_bills", "morning_on", "night_on"}) s.put(k, p.getBoolean(k, k.startsWith("guard")));
+            s.put("screen_mode", p.getString("screen_mode", "notify"));
+            s.put("bundled_voice", CeyoVoiceEngine.available(ctx()));
+            if (Build.VERSION.SDK_INT >= 29) { android.app.role.RoleManager rm = activity.getSystemService(android.app.role.RoleManager.class);
+                s.put("screening", rm != null && rm.isRoleHeld(android.app.role.RoleManager.ROLE_CALL_SCREENING)); }
+            for (String k : new String[]{"car_on", "guard_links", "guard_bills", "morning_on", "night_on", "wake_on"}) s.put(k, p.getBoolean(k, k.startsWith("guard")));
             s.put("morning_h", p.getInt("morning_h", 7)); s.put("morning_m", p.getInt("morning_m", 0));
             s.put("night_h", p.getInt("night_h", 23)); s.put("night_m", p.getInt("night_m", 0));
             s.put("digest_count", p.getInt("digest_count", 0));
