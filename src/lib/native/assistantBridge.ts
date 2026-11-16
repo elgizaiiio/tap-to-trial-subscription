@@ -91,7 +91,7 @@ export function phoneScreenMode(value: ScreenMode): void {
 export function phoneOpenSettings(which: "assistant" | "listener" | "notifications" | "alarms" | "overlay" | "battery" | "test_voice"): void {
   const a = api(); if (a?.openSettings) safe(() => a.openSettings?.(which));
 }
-export type PhoneAssistantStatus = Partial<Record<"notifications" | "listener" | "assistant" | "car_on" | "guard_links" | "guard_bills" | "morning_on" | "night_on" | "wake_on" | "screening" | "bundled_voice" | "overlay" | "battery" | "recognizer", boolean>> & { wake_status?: string; screen_mode?: ScreenMode } & Partial<Record<"morning_h" | "morning_m" | "night_h" | "night_m" | "digest_count", number>>;
+export type PhoneAssistantStatus = Partial<Record<"notifications" | "listener" | "assistant" | "car_on" | "guard_links" | "guard_bills" | "morning_on" | "night_on" | "wake_on" | "screening" | "bundled_voice" | "overlay" | "battery" | "recognizer", boolean>> & { wake_status?: string; screen_mode?: ScreenMode; recognizer_name?: string; recognizers?: string } & Partial<Record<"morning_h" | "morning_m" | "night_h" | "night_m" | "digest_count" | "spent_today", number>>;
 export function phoneStatus(): PhoneAssistantStatus | null {
   const a = api(); if (!a?.status) return null;
   try {
