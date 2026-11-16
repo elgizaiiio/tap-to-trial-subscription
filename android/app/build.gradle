@@ -10,7 +10,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode = (System.getenv('CEYO_ANDROID_VERSION_CODE') ?: '4').toInteger()
-        versionName (System.getenv("CEYO_ANDROID_TRY") == "1" ? "1.2.3-try" : "1.2.3")
+        versionName (System.getenv("CEYO_ANDROID_TRY") == "1" ? "1.2.4-try" : "1.2.4")
         resValue "string", "app_name", System.getenv("CEYO_ANDROID_TRY") == "1" ? "Ceyo Try" : "Ceyo"
         resValue "string", "title_activity_main", System.getenv("CEYO_ANDROID_TRY") == "1" ? "Ceyo Try" : "Ceyo"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

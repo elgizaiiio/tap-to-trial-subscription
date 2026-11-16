@@ -1,4 +1,4 @@
-import { consumePhonePrompt, phoneLiveEnd, phoneLiveUpdate, phoneReply } from "@/lib/native/assistantBridge";
+import { consumePhonePrompt, phoneLiveEnd, phoneLiveUpdate, phoneReply, phoneSpeak, takePhoneVoiceReply } from "@/lib/native/assistantBridge";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import { appCopyRestricted } from "@/lib/appInteractionPolicy";
@@ -317,11 +317,13 @@ export function HubChat({
   const orb = orbStateFor(lastAgent, s.running);
   // Own notifications at the chat level, where real steps and the final answer are available.
   const nativeTurn = useRef<{ turnId: string; shown: boolean; key: string } | null>(null);
+  const nativeVoice = useRef(false);
   useEffect(() => {
     if (demo) return;
     const path = "/?chat=" + encodeURIComponent(group ? "group:" + group.id : "bot:" + agent.id) + (sessionId ? "&session=" + encodeURIComponent(sessionId) : "");
     const sync = () => {
       if (s.running) {
+        if (takePhoneVoiceReply()) nativeVoice.current = true;
         const id = lastAgent?.id || "pending";
         if (!nativeTurn.current || nativeTurn.current.turnId !== id) nativeTurn.current = { turnId: id, shown: nativeTurn.current?.shown || false, key: "" };
         if (!document.hidden) return;
@@ -335,6 +337,11 @@ export function HubChat({
       } else if (nativeTurn.current?.shown && !lastAgent?.running) {
         phoneLiveEnd(agent.name, phoneReply(lastAgent), path);
         nativeTurn.current = null;
+      }
+      if (!s.running && nativeVoice.current && lastAgent && !lastAgent.running) {
+        nativeVoice.current = false;
+        const reply = phoneReply(lastAgent);
+        if (reply) phoneSpeak(reply, ar ? "ar" : "en");
       }
     };
     sync(); document.addEventListener("visibilitychange", sync);

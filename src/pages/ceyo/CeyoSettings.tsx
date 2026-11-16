@@ -61,7 +61,7 @@ function Row({ icon, label, value, onClick, danger, right, sub, checked, disable
   disabled?: boolean;
 }) {
   return (
-    <button
+    <Button variant="ghost"
       type="button"
       className="ceyo-row"
       data-danger={danger}
@@ -74,7 +74,7 @@ function Row({ icon, label, value, onClick, danger, right, sub, checked, disable
       <span className="ceyo-row-label"><strong>{label}</strong>{sub && <small>{sub}</small>}</span>
       {value && <span className="ceyo-row-value">{value}</span>}
       {right ?? (onClick && !danger ? <ChevronRight size={17} className="ceyo-row-chev" /> : null)}
-    </button>
+    </Button>
   );
 }
 
@@ -87,6 +87,13 @@ const Toggle = ({ on }: { on: boolean }) => <span className="ceyo-switch" data-o
 function PhoneAssistantGroup() {
   const [st, setSt] = useState<PhoneAssistantStatus | null>(null);
   const refresh = () => setSt(phoneStatus());
+  const toggle = (key: "wake_on" | "car_on" | "guard_links" | "guard_bills") => {
+    if (!st) return;
+    const on = !st[key];
+    if (!phoneOption(key, on)) { toast.error("Could not reach the phone controls. Reopen Ceyo Try and try again."); return; }
+    setSt({ ...st, [key]: on, ...(key === "wake_on" ? { wake_status: on ? "starting" : "off" } : {}) });
+    window.setTimeout(refresh, 600);
+  };
   useEffect(() => {
     if (!hasPhoneAssistant()) return;
     refresh();
@@ -109,14 +116,14 @@ function PhoneAssistantGroup() {
   return (
     <Group title="Phone assistant">
       <Row label="Ceyo as phone assistant" sub="Long-press power to talk" value={st.assistant ? "On" : "Set up"} onClick={() => phoneOpenSettings("assistant")} />
-      <Row label={'Say "Hey Ceyo" / "يا سيو"'} sub={st.wake_status === "failed" ? "Microphone or voice engine unavailable" : st.wake_status === "listening" ? "Listening" : st.wake_status === "starting" ? "Starting…" : "Stopped"} checked={!!st.wake_on} right={<Toggle on={!!st.wake_on} />} onClick={() => { phoneOption("wake_on", !st.wake_on); later(); }} />
+      <Row label={'Say "Hey Ceyo" / "يا سيو"'} sub={st.wake_status === "failed" ? "Microphone or voice engine unavailable" : st.wake_status === "listening" ? "Listening" : st.wake_status === "starting" ? "Starting…" : "Stopped"} checked={!!st.wake_on} right={<Toggle on={!!st.wake_on} />} onClick={() => toggle("wake_on")} />
       <Row label="Notifications" value={st.notifications ? "On" : "Turn on"} onClick={() => { phoneOpenSettings("notifications"); later(); }} />
       <Row label="Morning briefing" value={st.morning_on ? `${pad(st.morning_h)}:${pad(st.morning_m)}` : "Off"} onClick={() => st.morning_on ? (phoneRoutine("morning", st.morning_h ?? 7, st.morning_m ?? 0, false), later()) : pickTime("morning", st.morning_h ?? 7, st.morning_m ?? 0)} />
       <Row label="Night reflection" value={st.night_on ? `${pad(st.night_h)}:${pad(st.night_m)}` : "Off"} onClick={() => st.night_on ? (phoneRoutine("night", st.night_h ?? 23, st.night_m ?? 0, false), later()) : pickTime("night", st.night_h ?? 23, st.night_m ?? 0)} />
-      <Row label="Driving mode" sub="Greets you when the car's Bluetooth connects" checked={!!st.car_on} right={<Toggle on={!!st.car_on} />} onClick={() => { phoneOption("car_on", !st.car_on); later(); }} />
+      <Row label="Driving mode" sub="Greets you when the car's Bluetooth connects" checked={!!st.car_on} right={<Toggle on={!!st.car_on} />} onClick={() => toggle("car_on")} />
       <Row label="Notification guard" sub="Bills and scam links, checked on the phone" value={st.listener ? "On" : "Set up"} onClick={() => phoneOpenSettings("listener")} />
-      <Row label="Scam link alerts" checked={!!st.guard_links} right={<Toggle on={!!st.guard_links} />} onClick={() => { phoneOption("guard_links", !st.guard_links); later(); }} />
-      <Row label="Bill reminders" checked={!!st.guard_bills} right={<Toggle on={!!st.guard_bills} />} onClick={() => { phoneOption("guard_bills", !st.guard_bills); later(); }} />
+      <Row label="Scam link alerts" checked={!!st.guard_links} right={<Toggle on={!!st.guard_links} />} onClick={() => toggle("guard_links")} />
+      <Row label="Bill reminders" checked={!!st.guard_bills} right={<Toggle on={!!st.guard_bills} />} onClick={() => toggle("guard_bills")} />
       <Row label="Unknown callers" sub={st.screening === false && st.screen_mode !== "off" ? "Allow Ceyo as call screener" : "Numbers not in your contacts"} value={modeName[st.screen_mode || "notify"]} onClick={() => { phoneScreenMode(nextMode); later(); }} />
     </Group>
   );
