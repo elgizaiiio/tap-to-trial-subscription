@@ -50,6 +50,7 @@ public class CeyoAssistantActivity extends Activity {
         root.addView(sheet, new LinearLayout.LayoutParams(-1, -2));
         sheet.setOnClickListener(v -> { });
         setContentView(root);
+        CeyoWakeService.stop(this);
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 41);
         else start();
     }
@@ -85,5 +86,5 @@ public class CeyoAssistantActivity extends Activity {
         finish();
     }
 
-    @Override protected void onDestroy() { if (recognizer != null) recognizer.destroy(); super.onDestroy(); }
+    @Override protected void onDestroy() { if (recognizer != null) recognizer.destroy(); CeyoWakeService.start(this); super.onDestroy(); }
 }

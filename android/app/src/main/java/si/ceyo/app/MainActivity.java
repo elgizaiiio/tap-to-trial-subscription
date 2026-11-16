@@ -20,6 +20,13 @@ public class MainActivity extends BridgeActivity {
         handleLaunch(getIntent());
     }
 
+    @Override public void onResume() { super.onResume(); si.ceyo.app.assistant.CeyoWakeService.start(this); }
+
+    @Override public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
+        super.onRequestPermissionsResult(code, perms, res);
+        if (code == 53 && res.length > 0 && res[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) si.ceyo.app.assistant.CeyoWakeService.start(this);
+    }
+
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); handleLaunch(intent); }
 
     /** Opens a notification/widget/assistant path, or a shared text/link from another app, inside the trusted origin only. */
