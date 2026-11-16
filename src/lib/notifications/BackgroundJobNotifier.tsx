@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { notifyJobComplete } from "@/lib/notifyJobComplete";
+import { hasPhoneAssistant, phoneLiveEnd, phoneReply } from "@/lib/native/assistantBridge";
 
 /**
  * Global background-work notifier.
@@ -40,16 +41,25 @@ export default function BackgroundJobNotifier() {
     let runChannel: ReturnType<typeof supabase.channel> | null = null;
     let timer: number | undefined;
 
-    const announceJob = (row: any) => {
+    const announceJob = async (row: any) => {
       if (!row?.id) return;
       const key = `job:${row.id}:${row.status}`;
       if (seen.current.has(key)) return;
       if (row.status !== "completed" && row.status !== "failed") return;
       seen.current.add(key);
+      if (hasPhoneAssistant() && row.conversation_id) {
+        if (row.status !== "completed") return;
+        const { data: conversation } = await supabase.from("conversations").select("bot_id").eq("id", row.conversation_id).maybeSingle();
+        if (cancelled || !conversation?.bot_id) return;
+        const { data: bot } = await supabase.from("bots").select("name").eq("id", conversation.bot_id).maybeSingle();
+        const reply = phoneReply({ text: typeof row.result === "string" ? row.result : "", running: false, stopped: false, error: null });
+        if (!cancelled && document.hidden && bot && reply) phoneLiveEnd(bot.name, reply, "/?chat=" + encodeURIComponent("bot:" + conversation.bot_id));
+        return;
+      }
       const meta = KIND_LABEL[row.kind as string] ?? { label: "Task finished", kind: "research" as Kind };
       const title = row.status === "failed" ? "A background task failed" : meta.label;
       const body =
-        row.status === "error"
+        row.status === "failed"
           ? String(row.error || "Something went wrong. Your progress was saved.").slice(0, 180)
           : String(row.result || "").slice(0, 180) || undefined;
       notifyJobComplete({

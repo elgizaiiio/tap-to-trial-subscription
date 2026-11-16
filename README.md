@@ -381,6 +381,12 @@ bunx vitest run
 
 ## Current work
 
+### Continuing bot chat and Android repair — 2026-11-16
+- One owner-locked app thread per bot/group via open_bot_thread; paginated timeline includes prior app conversations, without deleting/moving any message or changing job/routine references. Channel chats remain isolated. Removed unused new-chat callback; assistant prompts continue the same bot.
+- Native trust is updated synchronously from Capacitor navigation instead of blocking WebView calls. Assistant-role setup and notification permissions/settings repaired. Wake validates model vocabulary, retains JNI crash marker, releases AudioRecord before assistant handover; assistant uses icon controls and stateful robot.
+- Verification: final Android release compiled, 12 JVM + 23 web tests passed; v9 certificate matches v8, package si.ceyo.app.trial, version 1.2.3-try/code 9, ~52 MB arm64. Temporary direct download verified byte-for-byte. Public desktop/mobile opens auth with no page errors/overflow; signed-in history and real Honor microphone/wake accuracy unavailable (external_unmanaged). A native notification is not a universal OEM Dynamic Island; locked/force-stopped delivery and Firebase for the trial package are not activated. Updated hosted UI still requires publishing; APK uses the existing Lovable live URL.
+- Database readback: 498 messages remain across 44 original threads. Migration introduced no new lint findings; 15 existing security findings remain for separate review.
+
 - Liquid-glass motion videos: bots now have create_voiceover (Cartesia Sonic, any language, masculine/feminine, accent, emotion, measured word captions) and create_motion_video (Ceyo glass style, 16:9/9:16/1:1/4:5, Arabic RTL, ambient or supplied music with ducking, up to 60 s).
 - Verification: 41 tests in src/lib/computer pass; live runs on a real E2B computer with real Cartesia voices produced a 16:9 English video (Daniel, 11 s) and a 9:16 Arabic video (Layan, 12 s), frames and loudness checked. Not checked: a full request through the signed-in chat screen.
 

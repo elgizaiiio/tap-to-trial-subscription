@@ -180,7 +180,18 @@ export default function AgentHubPage({ demo = false }: { demo?: boolean }) {
     ? ws.agents.find((agent) => agent.id === (activeTarget.kind === "group" ? activeGroup?.coordinatorId : activeTarget.id))
     : null;
   const activeSessions = activeAgent ? ws.sessions.filter((session) => session.agentId === activeAgent.id) : [];
-  const selectedSession = chatTarget ? params.get("session") : null;
+  const [resolvedThread, setResolvedThread] = useState<{ botId: string; id: string } | null>(null);
+  const selectedSession = chatTarget && resolvedThread?.botId === activeAgent?.id ? resolvedThread.id : null;
+  useEffect(() => {
+    if (demo || !chatTarget || !activeAgent) return;
+    let active = true;
+    void agentApi.openBotThread(activeAgent.id).then(({ session }) => {
+      if (!active) return;
+      workspace.upsertSession(session);
+      setResolvedThread({ botId: activeAgent.id, id: session.id });
+    }).catch((error) => { if (active) toast.error(error instanceof Error ? error.message : "Could not open your chat"); });
+    return () => { active = false; };
+  }, [demo, chatTarget?.kind, chatTarget?.id, activeAgent?.id]);
   const paid = isPaidUser(ws.tier);
 
   const go = useCallback((next: Record<string, string>, replace = false) => {
@@ -211,13 +222,13 @@ export default function AgentHubPage({ demo = false }: { demo?: boolean }) {
     go(next);
   }, [go, local.groups, ws.sessions, updateLocal]);
 
-  // The phone handed over a prompt: open the main assistant in a new chat so its message box can take it.
+  // Assistant/widget prompts continue the same bot thread.
   const phonePrompt = useRef<boolean | null>(null);
   if (phonePrompt.current === null) phonePrompt.current = !demo && !!capturePhonePrompt();
   useEffect(() => {
     if (!phonePrompt.current || !ws.ready || !storageReady || !primary) return;
     phonePrompt.current = false;
-    if (!chatTarget) openChat("bot", primary.id, false, null);
+    if (!chatTarget) openChat("bot", primary.id);
   }, [ws.ready, storageReady, primary, chatTarget, openChat]);
 
   const latestFor = useCallback((agentId: string) => ws.sessions.find((session) => session.agentId === agentId), [ws.sessions]);

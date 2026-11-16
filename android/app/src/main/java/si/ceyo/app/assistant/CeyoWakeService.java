@@ -33,8 +33,11 @@ public class CeyoWakeService extends Service {
 
     public static String health(Context c) {
         java.io.File guard = new java.io.File(c.getFilesDir(), "wake_init");
-        if (guard.exists() && System.currentTimeMillis() - guard.lastModified() > 30000) return "failed";
-        try { return new String(java.nio.file.Files.readAllBytes(new java.io.File(c.getFilesDir(), "wake_status").toPath()), java.nio.charset.StandardCharsets.UTF_8); } catch (Exception e) { return "off"; }
+        try {
+            String status = new String(java.nio.file.Files.readAllBytes(new java.io.File(c.getFilesDir(), "wake_status").toPath()), java.nio.charset.StandardCharsets.UTF_8);
+            if (guard.exists() && System.currentTimeMillis() - guard.lastModified() > 30000 && !"listening".equals(status)) return "failed";
+            return status;
+        } catch (Exception e) { return "off"; }
     }
     private void health(String value) {
         try { java.nio.file.Files.write(new java.io.File(getFilesDir(), "wake_status").toPath(), value.getBytes(java.nio.charset.StandardCharsets.UTF_8)); } catch (Exception ignored) {}
@@ -78,6 +81,12 @@ public class CeyoWakeService extends Service {
                     if (asset.available() < (name.endsWith("onnx") ? 10000 : 10)) throw new IllegalStateException("Missing voice asset");
                 }
             }
+            String tokens, keywords;
+            try (java.io.InputStream a = getAssets().open("ceyo-voice/kws/tokens.txt"); java.io.InputStream b = getAssets().open("ceyo-voice/kws/keywords.txt")) {
+                tokens = readText(a);
+                keywords = readText(b);
+            }
+            if (!CeyoKeywords.valid(tokens, keywords)) throw new IllegalStateException("Keyword vocabulary mismatch");
             OnlineTransducerModelConfig t = new OnlineTransducerModelConfig();
             t.setEncoder("ceyo-voice/kws/encoder.onnx"); t.setDecoder("ceyo-voice/kws/decoder.onnx"); t.setJoiner("ceyo-voice/kws/joiner.onnx");
             OnlineModelConfig m = new OnlineModelConfig();
@@ -90,7 +99,7 @@ public class CeyoWakeService extends Service {
             try { guard.createNewFile(); } catch (Exception ignored) { }
             kws = new KeywordSpotter(getAssets(), cfg);
             stream = kws.createStream("");
-            guard.delete();
+            // Keep the marker for the entire native lifetime, not just initialization.
             int size = Math.max(AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT), 3200);
             rec = new AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size * 2);
             recorder = rec;
@@ -107,7 +116,10 @@ public class CeyoWakeService extends Service {
                 stream.acceptWaveform(n == samples.length ? samples : java.util.Arrays.copyOf(samples, n), 16000);
                 while (kws.isReady(stream)) kws.decode(stream);
                 String hit = kws.getResult(stream).getKeyword();
-                if (hit != null && !hit.isEmpty()) { kws.reset(stream); woke(); break; }
+                if (hit != null && !hit.isEmpty()) {
+                    rec.stop(); rec.release(); rec = null; recorder = null;
+                    woke(); break;
+                }
             }
         } catch (Throwable error) {
             if (running) health("failed");
@@ -132,6 +144,11 @@ public class CeyoWakeService extends Service {
             .setLargeIcon(CeyoRobot.bitmap(this, "talking", 128)).setContentIntent(CeyoIntents.listen(this, 902)).setAutoCancel(true));
         try { CeyoIntents.listen(this, 902).send(); } catch (Exception ignored) { }
         stopSelf();
+    }
+    private static String readText(java.io.InputStream in) throws java.io.IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream(); byte[] bytes = new byte[4096]; int n;
+        while ((n = in.read(bytes)) != -1) out.write(bytes, 0, n);
+        return out.toString("UTF-8");
     }
 
     @Override public void onDestroy() { running = false; if ("listening".equals(health(this))) health("off"); AudioRecord r = recorder; if (r != null) try { r.stop(); } catch (Exception ignored) {} super.onDestroy(); }

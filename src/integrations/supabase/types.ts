@@ -1935,6 +1935,25 @@ export type Database = {
       is_people_member: { Args: { _thread: string }; Returns: boolean }
       leave_people_thread: { Args: { p_thread: string }; Returns: undefined }
       my_people_threads: { Args: never; Returns: Json }
+      open_bot_thread: {
+        Args: { p_bot: string }
+        Returns: {
+          bot_id: string | null
+          created_at: string
+          group_id: string | null
+          id: string
+          is_hidden: boolean
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "conversations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       open_direct_thread: { Args: { p_username: string }; Returns: string }
       people_thread_info: { Args: { p_thread: string }; Returns: Json }
       platform_touch_key_limits: { Args: { p_key_id: string }; Returns: Json }

@@ -12,8 +12,6 @@ import android.webkit.WebView;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import si.ceyo.app.R;
 
@@ -23,8 +21,11 @@ public class MegsyBridge {
     private static WeakReference<WebView> current = new WeakReference<>(null);
     private final Activity activity;
     private final WebView web;
+    private volatile String currentUrl;
 
-    public MegsyBridge(Activity activity, WebView web) { this.activity = activity; this.web = web; current = new WeakReference<>(web); }
+    public MegsyBridge(Activity activity, WebView web) { this.activity = activity; this.web = web; current = new WeakReference<>(web); currentUrl = web.getUrl(); }
+    /** Called on the UI thread by Capacitor's existing navigation client. */
+    public void pageChanged(String url) { currentUrl = url; }
 
     public static boolean trustedUrl(String url) {
         if (url == null) return false;
@@ -33,11 +34,7 @@ public class MegsyBridge {
     }
 
     private boolean trusted() {
-        final String[] url = new String[1];
-        CountDownLatch l = new CountDownLatch(1);
-        web.post(() -> { url[0] = web.getUrl(); l.countDown(); });
-        try { l.await(800, TimeUnit.MILLISECONDS); } catch (InterruptedException ignored) { }
-        return trustedUrl(url[0]);
+        return trustedUrl(currentUrl);
     }
 
     private Context ctx() { return activity.getApplicationContext(); }
@@ -170,10 +167,17 @@ public class MegsyBridge {
     @JavascriptInterface public void openSettings(String which) { if (!trusted()) return;
         Intent i;
         switch (which) {
-            case "assistant": i = new Intent(Settings.ACTION_VOICE_INPUT_SETTINGS); break;
+            case "assistant":
+                if (Build.VERSION.SDK_INT >= 29) {
+                    android.app.role.RoleManager rm = activity.getSystemService(android.app.role.RoleManager.class);
+                    if (rm != null && rm.isRoleAvailable(android.app.role.RoleManager.ROLE_ASSISTANT) && !rm.isRoleHeld(android.app.role.RoleManager.ROLE_ASSISTANT)) {
+                        activity.runOnUiThread(() -> activity.startActivityForResult(rm.createRequestRoleIntent(android.app.role.RoleManager.ROLE_ASSISTANT), 55)); return;
+                    }
+                }
+                i = new Intent(Settings.ACTION_VOICE_INPUT_SETTINGS); break;
             case "listener": i = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS); break;
             case "notifications":
-                if (Build.VERSION.SDK_INT >= 33) { activity.runOnUiThread(() -> activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 51)); return; }
+                if (Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) { activity.runOnUiThread(() -> activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 51)); return; }
                 i = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, ctx().getPackageName()); break;
             case "alarms": i = Build.VERSION.SDK_INT >= 31 ? new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + ctx().getPackageName())) : null; break;
             default: return;

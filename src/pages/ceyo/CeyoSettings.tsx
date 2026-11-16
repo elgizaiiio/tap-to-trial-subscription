@@ -96,7 +96,7 @@ function PhoneAssistantGroup() {
     return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", onVis); };
   }, []);
   if (!st) return null;
-  const later = () => window.setTimeout(refresh, 400);
+  const later = () => { refresh(); window.setTimeout(refresh, 400); };
   const pad = (n?: number) => String(n ?? 0).padStart(2, "0");
   const pickTime = (kind: "morning" | "night", h?: number, m?: number) => {
     const v = window.prompt(kind === "morning" ? "Morning briefing time (HH:MM)" : "Night reflection time (HH:MM)", `${pad(h)}:${pad(m)}`);

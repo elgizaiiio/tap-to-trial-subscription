@@ -4,6 +4,7 @@ import { assignAgentVoices, type AgentVoiceSettings, type RecordingOrigin } from
 import type { Voice } from "@/lib/audio/voiceSchema";
 import { readEventStream } from "./readEventStream";
 import { isInternalMessage } from "./internalMessages";
+import { botTimelineIds } from "./botTimeline";
 
 export type AgentColor = "aurora" | "ocean" | "ember" | "mint" | "sun" | "rose" | "mono";
 
@@ -72,7 +73,7 @@ function toAgent(b: any, primary: string | null): AgentInfo {
   const color = COLORS.includes(b.look?.color) ? b.look.color : "aurora";
   return { id: b.id, name: b.name, description: b.description || "", color, prompt: b.instructions || "", isDefault: b.id === primary, createdAt: b.created_at, voiceSettings: b.look?.voiceSettings };
 }
-const toSession = (c: any): SessionInfo => ({ id: c.id, agentId: c.bot_id || "", title: c.title || "New chat", status: running.has(c.id) ? "running" : "idle", createdAt: c.created_at });
+const toSession = (c: any): SessionInfo => ({ id: c.id, agentId: c.bot_id || "", title: c.title || "Ceyo", status: running.has(c.id) ? "running" : "idle", createdAt: c.created_at });
 
 /* Live replies: one in-flight request per conversation, with buffered events for late subscribers. */
 type Live = { ctl: AbortController; events: RawEvent[]; subs: Set<(e: RawEvent) => void> };
@@ -263,12 +264,16 @@ export const agentApi = {
     return { sessions: (data ?? []).map(toSession) };
   },
   createSession: async (p: { agentId?: string; text: string; images?: string[]; messageId?: string; origin?: RecordingOrigin }) => {
-    const user = await uid();
-    const { data: group } = await db.from("bot_groups").select("id").eq("owner_id", user).eq("coordinator_id", p.agentId || "").maybeSingle();
-    const { data, error } = await db.from("conversations").insert({ user_id: user, bot_id: p.agentId || null, group_id: group?.id || null, title: p.text.slice(0, 60) || "New chat" }).select("*").single();
+    if (!p.agentId) throw new AgentApiError(400, "bot_required", "Choose your bot first");
+    const { session } = await agentApi.openBotThread(p.agentId);
+    await addUserMessage(session.id, p.text, p.images, p.messageId, p.origin);
+    return { session: { ...session, status: "running" } as SessionInfo };
+  },
+  openBotThread: async (botId: string) => {
+    await uid();
+    const { data, error } = await db.rpc("open_bot_thread", { p_bot: botId });
     if (error) fail(error);
-    await addUserMessage(data.id, p.text, p.images, p.messageId, p.origin);
-    return { session: { ...toSession(data), status: "running" } as SessionInfo };
+    return { session: toSession(data) };
   },
   session: async (id: string) => {
     const { data, error } = await db.from("conversations").select("*").eq("id", id).single();
@@ -296,8 +301,31 @@ export const agentApi = {
     return { pinned };
   },
   events: async (id: string) => {
-    const { data, error } = await db.from("messages").select("*").eq("conversation_id", id).order("created_at");
-    if (error) fail(error);
+    const user = await uid();
+    const { data: current, error: currentError } = await db.from("conversations").select("id,bot_id,group_id,created_at").eq("id", id).eq("user_id", user).single();
+    if (currentError) fail(currentError);
+    const { data: channels, error: channelError } = await db.from("channel_identities").select("conversation_id").eq("user_id", user);
+    if (channelError) fail(channelError);
+    const channelIds = new Set<string>((channels || []).map((c: any) => c.conversation_id));
+    let threadIds = [id];
+    if (current.bot_id && !channelIds.has(id)) {
+      const rows: any[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data: page, error } = await db.from("conversations").select("id,bot_id,group_id,created_at").eq("user_id", user).eq("bot_id", current.bot_id).order("created_at").order("id").range(offset, offset + 499);
+        if (error) fail(error);
+        rows.push(...page); if (page.length < 500) break;
+      }
+      threadIds = botTimelineIds(rows, current.bot_id, current.group_id, channelIds);
+    }
+    const data: any[] = [];
+    for (let chunk = 0; chunk < threadIds.length; chunk += 100) {
+      for (let offset = 0; ; offset += 500) {
+        const { data: page, error } = await db.from("messages").select("*").eq("user_id", user).in("conversation_id", threadIds.slice(chunk, chunk + 100)).order("created_at").order("id").range(offset, offset + 499);
+        if (error) fail(error);
+        data.push(...page); if (page.length < 500) break;
+      }
+    }
+    data.sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
     const events: RawEvent[] = [];
     const embeddedUsers = new Set((data || []).flatMap((m: any) => (m.metadata?.transcript || []).filter((e: RawEvent) => e.type === "user.message").map((e: RawEvent) => e.id)));
     for (const m of data ?? []) {
