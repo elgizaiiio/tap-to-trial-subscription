@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { LOCALES, type LocaleCode, getLocale } from "@/lib/landing/i18n/locales";
-import { translateExactText, getUserLang, type AuthLang } from "@/lib/authI18n";
+import { translateExactText, useUserLang, type AuthLang } from "@/lib/authI18n";
 
 interface SEOHeadProps {
   title: string;
@@ -41,9 +41,9 @@ const SEOHead = ({
   // If SEOHead has an explicit locale (localized landing routes), use it.
   // Otherwise defer to the visitor's chosen language (English or Egyptian
   // Arabic) so <html lang/dir> stays in sync with the in-app dictionary.
-  const savedLang = getUserLang();
-  const htmlLang = meta?.hreflang ?? (savedLang === "ar-eg" ? "ar-EG" : "en");
-  const htmlDir = meta?.dir ?? (savedLang === "ar-eg" ? "rtl" : "ltr");
+  const savedLang = useUserLang();
+  const htmlLang = meta?.hreflang ?? (savedLang === "ar-eg" ? "ar-EG" : savedLang);
+  const htmlDir = meta?.dir ?? (["ar-eg", "fa", "ur"].includes(savedLang) ? "rtl" : "ltr");
   const ogLocale = meta?.ogLocale ?? (savedLang === "ar-eg" ? "ar_EG" : "en_US");
   const effectiveLang = (meta?.code ?? savedLang) as AuthLang | undefined;
 
