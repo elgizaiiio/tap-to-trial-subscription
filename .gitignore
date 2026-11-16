@@ -30,3 +30,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# large on-phone voice files: fetched by scripts/fetch-android-voice.sh
+android/app/libs/*.aar
+android/app/src/main/assets/ceyo-voice/tts/model.onnx
