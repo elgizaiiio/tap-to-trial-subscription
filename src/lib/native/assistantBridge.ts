@@ -57,13 +57,13 @@ export function consumePhonePrompt(): PhonePrompt | null {
 
 export type PhoneBotIdentity = { name: string; path: string };
 export function phoneBotIdentity(identity: PhoneBotIdentity): void {
-  const fn = api()?.setBotIdentity; if (fn) safe(() => fn(JSON.stringify(identity)));
+  const a = api(); if (a?.setBotIdentity) safe(() => a.setBotIdentity?.(JSON.stringify(identity)));
 }
 export function phoneLiveUpdate(title: string, text: string, progress = -1, details?: { name: string; path: string; state: string }): void {
-  const fn = api()?.liveUpdate; if (fn) safe(() => fn(JSON.stringify({ title: title.slice(0, 60), text: text.slice(0, 300), progress, ...details })));
+  const a = api(); if (a?.liveUpdate) safe(() => a.liveUpdate?.(JSON.stringify({ title: title.slice(0, 60), text: text.slice(0, 300), progress, ...details })));
 }
 export function phoneLiveEnd(title: string, text: string, path = "/"): void {
-  const fn = api()?.liveEnd; if (fn) safe(() => fn(JSON.stringify({ title: title.slice(0, 60), text: text.slice(0, 1500), path })));
+  const a = api(); if (a?.liveEnd) safe(() => a.liveEnd?.(JSON.stringify({ title: title.slice(0, 60), text: text.slice(0, 1500), path })));
 }
 /** UI fences are not notification messages. Do not invent success for error/cancelled/empty turns. */
 export function phoneReply(turn?: { text: string; running: boolean; stopped: boolean; error: string | null }): string {
@@ -78,7 +78,7 @@ export function takePhoneVoiceReply(): boolean {
   try { const on = sessionStorage.getItem("ceyo:voice-reply") === "1"; sessionStorage.removeItem("ceyo:voice-reply"); return on; } catch { return false; }
 }
 export function phoneRoutine(kind: "morning" | "night", hour: number, minute: number, on: boolean): void {
-  const fn = api()?.setRoutine; if (fn) safe(() => fn(JSON.stringify({ kind, hour, minute, on })));
+  const a = api(); if (a?.setRoutine) safe(() => a.setRoutine?.(JSON.stringify({ kind, hour, minute, on })));
 }
 export function phoneOption(key: "car_on" | "guard_links" | "guard_bills" | "wake_on", on: boolean): boolean {
   const a = api(); if (!a?.setOption) return false;
@@ -86,10 +86,10 @@ export function phoneOption(key: "car_on" | "guard_links" | "guard_bills" | "wak
 }
 export type ScreenMode = "off" | "notify" | "silence";
 export function phoneScreenMode(value: ScreenMode): void {
-  const fn = api()?.setOption; if (fn) safe(() => fn(JSON.stringify({ key: "screen_mode", value })));
+  const a = api(); if (a?.setOption) safe(() => a.setOption?.(JSON.stringify({ key: "screen_mode", value })));
 }
 export function phoneOpenSettings(which: "assistant" | "listener" | "notifications" | "alarms"): void {
-  const fn = api()?.openSettings; if (fn) safe(() => fn(which));
+  const a = api(); if (a?.openSettings) safe(() => a.openSettings?.(which));
 }
 export type PhoneAssistantStatus = Partial<Record<"notifications" | "listener" | "assistant" | "car_on" | "guard_links" | "guard_bills" | "morning_on" | "night_on" | "wake_on" | "screening" | "bundled_voice", boolean>> & { wake_status?: string; screen_mode?: ScreenMode } & Partial<Record<"morning_h" | "morning_m" | "night_h" | "night_m" | "digest_count", number>>;
 export function phoneStatus(): PhoneAssistantStatus | null {

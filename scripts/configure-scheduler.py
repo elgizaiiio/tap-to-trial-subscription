@@ -7,6 +7,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--apply', action='store_true')
+parser.add_argument('--test-lovable', action='store_true', help='Allow only the current owner-approved Ceyo test host')
 args = parser.parse_args()
 if not args.apply:
     print('Dry run; no changes. Apply requires the independent app deployment, direct GitHub token and migrated scheduler secret.')
@@ -16,7 +17,8 @@ from nacl.public import PublicKey, SealedBox
 origin = os.environ.get('APP_URL', 'https://web.ceyo.si').rstrip('/')
 from urllib.parse import urlparse
 host = urlparse(origin)
-if host.scheme != 'https' or not host.hostname or host.hostname.endswith(('.lovable.app', '.lovable.dev')) or host.username or host.password:
+approved_test = args.test_lovable and origin == 'https://tap-to-trial-subscription.lovable.app'
+if host.scheme != 'https' or not host.hostname or (host.hostname.endswith(('.lovable.app', '.lovable.dev')) and not approved_test) or host.username or host.password:
     raise RuntimeError('Use an independent HTTPS application address.')
 repo = '/repos/elgizaiiio/ceyo-private-scheduler'
 secret = os.environ['CEYO_CRON_SECRET']
@@ -35,6 +37,12 @@ def github(method, path, body=None):
 if not args.apply:
     print('Dry run; no changes. Use --apply to save encrypted scheduler credentials and verify callback.')
 else:
+    # Verify the candidate before modifying a previously working schedule.
+    response = requests.post(origin + '/api/public/ceyo-routines', headers={'Authorization': 'Bearer ' + secret}, timeout=600, allow_redirects=False)
+    if not response.ok or 'application/json' not in response.headers.get('Content-Type', ''):
+        raise RuntimeError('Candidate callback unavailable; existing scheduler unchanged.')
+    if not all(key in response.json() for key in ['results', 'jobs', 'phone']):
+        raise RuntimeError('Unexpected callback; existing scheduler unchanged.')
     public = github('GET', '/actions/secrets/public-key')
     encrypted = base64.b64encode(SealedBox(PublicKey(base64.b64decode(public['key']))).encrypt(secret.encode())).decode()
     github('PUT', '/actions/secrets/CEYO_CRON_SECRET', {'key_id': public['key_id'], 'encrypted_value': encrypted})

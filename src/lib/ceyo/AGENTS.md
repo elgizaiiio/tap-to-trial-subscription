@@ -14,3 +14,4 @@
 - Chat adapters must forward the selected per-step CoArena chain; Apify uses live discovery and signed owner-bound run documents, and validated social payloads render as chat cards. Why: routing must apply to real chat without catalogue bloat or cross-account run access.
 - Runtime credentials read service-only external Supabase Vault; callbacks use an independent HTTPS app origin and the migrated original scheduler value. Why: account deletion must not orphan scheduled tasks or invalidate existing signatures.
 - Read-only lookups requested together in one model step run concurrently, and discovery calls are cached per task. Why: fewer wasted steps.
+- Routine completion uses the existing service-only finish_routine_run transaction and preserves manual pauses; operator setup allows only an explicit exact test-host exception. Why: partial message/schedule writes and stale destinations must not masquerade as successful recurring work.
