@@ -4,8 +4,6 @@ import com.android.billingclient.api.*;
 import com.getcapacitor.*;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.util.List;
-import java.security.MessageDigest;
-import java.nio.charset.StandardCharsets;
 
 @CapacitorPlugin(name = "CeyoPlayBilling")
 public class CeyoPlayBillingPlugin extends Plugin implements PurchasesUpdatedListener {
@@ -24,7 +22,7 @@ public class CeyoPlayBillingPlugin extends Plugin implements PurchasesUpdatedLis
         String product = call.getString("productId");
         String account = call.getString("accountId");
         if (product == null || !List.of("ceyo_plus_monthly", "ceyo_plus_yearly", "ceyo_pro_monthly", "ceyo_ultra_monthly").contains(product)
-            || account == null || account.isBlank()) { call.reject("Invalid subscription request"); return; }
+            || account == null || !account.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")) { call.reject("Invalid subscription request"); return; }
         pending = call;
         expectedProduct = product;
         if (client.isReady()) { query(product, account); return; }
@@ -59,7 +57,7 @@ public class CeyoPlayBillingPlugin extends Plugin implements PurchasesUpdatedLis
                 }
             }
             if (selected == null) { fail("No eligible subscription plan"); return; }
-            BillingFlowParams flow = BillingFlowParams.newBuilder().setObfuscatedAccountId(accountHash(account))
+            BillingFlowParams flow = BillingFlowParams.newBuilder().setObfuscatedAccountId(account)
                 .setProductDetailsParamsList(List.of(BillingFlowParams.ProductDetailsParams.newBuilder()
                     .setProductDetails(details).setOfferToken(selected.getOfferToken()).build())).build();
             getActivity().runOnUiThread(() -> {
@@ -79,15 +77,6 @@ public class CeyoPlayBillingPlugin extends Plugin implements PurchasesUpdatedLis
             && renewal.getPriceAmountMicros() > 0
             && renewal.getRecurrenceMode() == ProductDetails.RecurrenceMode.INFINITE_RECURRING
             && ("yearly".equals(base) ? "P1Y" : "P1M").equals(renewal.getBillingPeriod());
-    }
-
-    private String accountHash(String account) {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(account.getBytes(StandardCharsets.UTF_8));
-            StringBuilder result = new StringBuilder();
-            for (byte b : digest) result.append(String.format("%02x", b));
-            return result.toString();
-        } catch (Exception e) { throw new IllegalStateException("Account binding unavailable"); }
     }
 
     @Override public synchronized void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
