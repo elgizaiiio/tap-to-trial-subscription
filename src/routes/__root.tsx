@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import "../styles/app.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AndroidSplash } from "@/components/native/AndroidSplash";
 
 // First-paint colours match the stored theme. Do not render a fake app frame
 // here: on a slow or interrupted connection it looks like an endless loader.
@@ -419,5 +420,5 @@ function RootShell({ children }: { children: ReactNode }) {
 
 export function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  return <QueryClientProvider client={queryClient}><Outlet /></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><AndroidSplash /><Outlet /></QueryClientProvider>;
 }
