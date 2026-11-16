@@ -56,3 +56,6 @@
 - Wallet creation is serialized in service-only database functions; transfer reservations persist by owner and operation key, and unknown outcomes are never replayed automatically. Why: concurrent requests must not replace keys or duplicate transfers.
 - Account deletion reauthenticates the caller and removes owned artifacts/data before deleting Supabase Auth; interrupted jobs stop for review rather than repeating external side effects. Why: destructive operations require verified ownership and honest completion.
 - Transactional email components share the CeyoMessage shell; hosted Auth templates are updated only through an operator-only Management API script and read-back. Why: branding must not replace native OTP or expose credentials.
+
+- Native assistant recognition selects an external SpeechRecognizer component explicitly; native status notifications use real chat steps and reply text, while primary identity is synced by the authenticated home. Why: selecting the assistant itself recursively fails, and the composer has no final answer data.
+- Android trial artifacts are selected through CEYO_ANDROID_TRY with a distinct package and build-generated label; skip production Firebase configuration in trial builds. Why: test installs must coexist without modifying the production identifier or binding an unrelated Firebase app.

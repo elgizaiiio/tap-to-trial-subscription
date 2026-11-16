@@ -1,4 +1,4 @@
-import { consumePhonePrompt, phoneLiveEnd, phoneLiveUpdate } from "@/lib/native/assistantBridge";
+import { consumePhonePrompt, phoneLiveEnd, phoneLiveUpdate, phoneReply } from "@/lib/native/assistantBridge";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import { appCopyRestricted } from "@/lib/appInteractionPolicy";
@@ -158,18 +158,6 @@ function Composer({
     if (p.send) onSend(p.text); else { setText(p.text); textarea.current?.focus(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // While the bot works and the user leaves the app, the phone shows a live notification and widget update.
-  const liveShown = useRef(false);
-  useEffect(() => {
-    const sync = () => {
-      if (running && document.hidden) { phoneLiveUpdate("Ceyo شغال…", ar ? "بيكمّل مهمتك في الخلفية" : "Working on it in the background"); liveShown.current = true; }
-    };
-    sync();
-    if (!running && liveShown.current) { liveShown.current = false; phoneLiveEnd("Ceyo خلص ✅", ar ? "الرد جاهز، افتح تشوفه" : "Your answer is ready"); }
-    document.addEventListener("visibilitychange", sync);
-    return () => document.removeEventListener("visibilitychange", sync);
-  }, [running, ar]);
-
   const submit = async () => {
     const typed = text.trim();
     if (uploading || (!typed && !files.length)) return;
@@ -329,6 +317,32 @@ export function HubChat({
 
   const lastAgent = useMemo(() => [...s.turns].reverse().find((t) => t.type === "agent") as AgentTurn | undefined, [s.turns]);
   const orb = orbStateFor(lastAgent, s.running);
+  // Own notifications at the chat level, where real steps and the final answer are available.
+  const nativeTurn = useRef<{ turnId: string; shown: boolean; key: string } | null>(null);
+  useEffect(() => {
+    if (demo) return;
+    const path = "/?chat=" + encodeURIComponent(group ? "group:" + group.id : "bot:" + agent.id) + (sessionId ? "&session=" + encodeURIComponent(sessionId) : "");
+    const sync = () => {
+      if (s.running) {
+        const id = lastAgent?.id || "pending";
+        if (!nativeTurn.current || nativeTurn.current.turnId !== id) nativeTurn.current = { turnId: id, shown: nativeTurn.current?.shown || false, key: "" };
+        if (!document.hidden) return;
+        const step = [...(lastAgent?.steps || [])].reverse().find((item) => item.status === "active");
+        const state = orb === "tool" ? "tool" : orb === "talking" ? "talking" : "thinking";
+        const label = ar ? (state === "tool" ? "يعمل…" : state === "talking" ? "يكتب…" : "يفكر…") : (state === "tool" ? "Working…" : state === "talking" ? "Writing…" : "Thinking…");
+        const detail = step?.label || label;
+        const key = state + detail;
+        if (nativeTurn.current.key !== key) phoneLiveUpdate(label, detail, -1, { name: agent.name, path, state });
+        nativeTurn.current.shown = true; nativeTurn.current.key = key;
+      } else if (nativeTurn.current?.shown && !lastAgent?.running) {
+        phoneLiveEnd(agent.name, phoneReply(lastAgent), path);
+        nativeTurn.current = null;
+      }
+    };
+    sync(); document.addEventListener("visibilitychange", sync);
+    return () => document.removeEventListener("visibilitychange", sync);
+  }, [demo, s.running, lastAgent, orb, ar, agent.id, agent.name, group?.id, sessionId]);
+
 
   useEffect(() => { setMenuOpen(false); setFindOpen(false); setFindQuery(""); setSheet(null); setReplyTo(null); setPinOverrides({}); }, [agent.id, sessionId]);
   const pinnedRef = useRef(pinned);

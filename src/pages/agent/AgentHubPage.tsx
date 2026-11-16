@@ -3,7 +3,7 @@ import { toast } from "sonner";
 /** Grok-style home for Ceyo bots and multi-bot groups, backed by real AgentSky chats. */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { capturePhonePrompt } from "@/lib/native/assistantBridge";
+import { capturePhonePrompt, phoneBotIdentity } from "@/lib/native/assistantBridge";
 import {
   ChevronDown,
   ChevronLeft,
@@ -163,6 +163,10 @@ export default function AgentHubPage({ demo = false }: { demo?: boolean }) {
     [ws.agents, coordinatorIds],
   );
   const primary = directoryAgents.find((agent) => agent.isDefault) || directoryAgents[0] || null;
+  useEffect(() => {
+    if (demo || !ws.ready) return;
+    phoneBotIdentity({ name: primary?.name || "Ceyo", path: primary ? "/?chat=" + encodeURIComponent("bot:" + primary.id) : "/" });
+  }, [demo, ws.ready, primary?.id, primary?.name]);
   const orderedAgents = [...directoryAgents].sort((a, b) => Number(a.isDefault) - Number(b.isDefault));
   const groupMembersAgents = demo ? DEMO_AGENTS.filter((agent) => agent.id !== "demo-lead") : ws.agents.filter((agent) => !coordinatorIds.has(agent.id) && !agent.isTemplate && !agent.mediaOnly);
 
