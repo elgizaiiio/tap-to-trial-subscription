@@ -1,3 +1,14 @@
+# Current requests (Nov 2026)
+- [x] Import GitHub repo
+- [x] Android: subscribe opens Google Play immediately (no extra card step)
+- [x] Android-only splash loader
+- [x] Play 3-day free trial offer definition (+test)
+- [ ] Push trial offer to Play Console (needs owner go-ahead; live store change)
+- [ ] Internal SMTP mail + redesign email templates to landing style
+- [ ] Web 3-day trial after card link with auto-charge (Kashier/Dodo)
+- [ ] Offline storage of pages/chats + 20+ bundled languages
+- [ ] Signed AAB — blocked: android/app/src native code (MainActivity, Play Billing plugin, manifest) missing from repo; no Android SDK in sandbox
+
 ## Emails, 3-day trial and Android Google sign-in — 2026-11-16
 - [ ] Branded sign-in/sign-up/password/email-change emails from notify.ceyo.si
 - [ ] Welcome email in the landing page look; welcome + task-ready emails send automatically
