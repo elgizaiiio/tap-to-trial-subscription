@@ -1,0 +1,1 @@
+- Web and Android OAuth providers share one sign-in handler and the native PKCE return path. Why: one redirect flow to maintain.

@@ -1,23 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
+import { showsLanding } from "@/config/domains";
 
-// The home route ships no og:image, so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+// Landing domains (ceyo.si, ceyo.app) show the landing page; every other host
+// is the Ceyo app. Both are lazy so the landing never downloads the app boot.
+const isLanding = typeof window !== "undefined" && showsLanding(window.location.host, window.location.search);
+// Start the app download as soon as this route loads, exactly like a static import.
+const spaModule = typeof window !== "undefined" && !isLanding ? import("@/lib/spaMount") : null;
+const SpaMount = lazy(() => (spaModule ?? import("@/lib/spaMount")).then((m) => ({ default: m.SpaMount })));
+const CeyoLanding = lazy(() => import("@/components/landing/CeyoLanding"));
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+function Home() {
+  const landing = isLanding;
+  return <Suspense fallback={null}>{landing ? <CeyoLanding /> : <SpaMount />}</Suspense>;
 }
+
+export const Route = createFileRoute("/")({
+  ssr: false,
+  component: Home,
+  head: () => ({
+    meta: [
+      { title: "Ceyo — Your Personal Bots and Group Chats" },
+      {
+        name: "description",
+        content:
+          "Ceyo personal bots work on complete projects with isolated cloud computers, specialist teams, 1,000+ app connections, calls and a built-in wallet. Plans start at $20/month.",
+      },
+      { property: "og:title", content: "Ceyo — Your Personal Bots and Group Chats" },
+      {
+        property: "og:description",
+        content:
+          "Build a specialist team for complete projects with Ceyo. Explore isolated bot computers, integrations, calls, wallet and paid plans.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Ceyo — Your Personal Bots and Group Chats" },
+      {
+        name: "twitter:description",
+        content:
+          "Build a specialist team for complete projects with Ceyo. Explore isolated bot computers, integrations, calls, wallet and paid plans.",
+      },
+    ],
+  }),
+});

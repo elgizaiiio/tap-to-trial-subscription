@@ -1,0 +1,41 @@
+/* Desktop workspace shares the original routes and account, no second app boot. */
+.ceyo-app-frame { --desktop-bg: oklch(.155 0 0); --desktop-surface: oklch(.2 0 0); --desktop-ink: oklch(.96 0 0); --desktop-muted: oklch(.66 0 0); --desktop-line: oklch(1 0 0 / 9%); }
+.ceyo-desktop-rail, .ceyo-desktop-welcome { display:none; }
+.ceyo-app-screen { min-width:0; }
+@media (min-width: 1024px) {
+  .ceyo-app-frame[data-desktop-enabled] { display:grid; grid-template-columns:184px minmax(0,1fr); height:100dvh; overflow:hidden; background:var(--desktop-bg); }
+  .ceyo-app-frame[data-desktop-enabled][data-compact] { grid-template-columns:68px minmax(0,1fr); }
+  .ceyo-app-frame[data-desktop-enabled] .ceyo-app-screen { position:relative; height:100dvh; overflow:auto; contain:layout; }
+  .ceyo-desktop-rail { display:flex; flex-direction:column; min-height:0; padding:20px 12px; border-right:1px solid var(--desktop-line); color:var(--desktop-ink); background:var(--desktop-bg); }
+  .ceyo-desktop-rail .ceyo-desktop-brand { justify-content:flex-start; gap:12px; height:48px; padding:10px; margin-bottom:32px; color:var(--desktop-ink); font-size:22px; letter-spacing:0; }
+  .ceyo-desktop-links { display:grid; gap:6px; }
+  .ceyo-desktop-rail .ceyo-desktop-link, .ceyo-desktop-rail .ceyo-desktop-collapse { justify-content:flex-start; gap:12px; height:44px; padding:10px; background:transparent; color:var(--desktop-muted); border-radius:6px; }
+  .ceyo-desktop-rail .ceyo-desktop-link:hover, .ceyo-desktop-rail .ceyo-desktop-link[aria-current] { background:var(--desktop-surface); color:var(--desktop-ink); }
+  .ceyo-desktop-rail .ceyo-desktop-collapse { margin-top:auto; }
+  [data-compact] .ceyo-desktop-rail span { display:none; }
+  .ceyo-app-frame .agent-hub { grid-template-columns:300px minmax(0,1fr); height:100dvh; animation:none!important; --hub-bg:var(--desktop-bg); }
+  .ceyo-app-frame .hub-home { background:var(--desktop-bg); }
+  .ceyo-app-frame .hub-home-header { min-height:72px; padding:16px; }
+  .ceyo-app-frame .hub-home-scroll { padding-bottom:100px; }
+  .ceyo-app-frame .hub-primary-button { flex-direction:row; gap:16px; margin:6px 0 24px; padding:12px; border:1px solid var(--hub-line); border-radius:8px; overflow:hidden; }
+  .ceyo-app-frame .hub-primary-character { width:52px; height:52px; margin:0; }
+  .ceyo-app-frame .hub-primary-character > .hub-bot-avatar { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(.5); }
+  .ceyo-app-frame .hub-primary-character > i.hub-primary-star { width:19px; height:19px; border-width:2px; }
+  .ceyo-app-frame .hub-category-rows { gap:4px; }
+  .ceyo-app-frame .hub-list-row { border-radius:6px; }
+  .ceyo-app-frame .hub-list-row:hover { background:var(--hub-surface); }
+  .ceyo-app-frame .hub-list-row-main { padding:12px 8px; }
+  .ceyo-app-frame .hub-row-title time { font-size:10px; }
+  .ceyo-app-frame .hub-content { position:relative; height:100%; overflow:hidden; border-left:1px solid var(--hub-line); }
+  .ceyo-desktop-welcome { display:flex; height:100%; align-items:center; justify-content:center; flex-direction:column; gap:18px; text-align:center; padding:32px; }
+  .ceyo-desktop-welcome h1 { font-size:32px; font-weight:500; letter-spacing:0; margin:8px 0; }
+  .ceyo-app-frame .ceyo-desktop-welcome .ceyo-desktop-start { background:var(--hub-ink)!important; color:var(--hub-bg)!important; min-width:160px; box-shadow:none!important; }
+  .ceyo-app-frame .cx-chat { height:100%; background:var(--desktop-bg); animation:none!important; }
+  .ceyo-app-frame .cx-head { padding-inline:24px; border-bottom:1px solid var(--desktop-line); background:var(--desktop-bg); backdrop-filter:none; }
+  .ceyo-app-frame .cx-scroll { scrollbar-gutter:stable; padding-inline:24px; }
+  .ceyo-app-frame .cx-scroll > * { max-width:min(820px,100%); margin-inline:auto; }
+  .ceyo-app-frame .cx-chat .cx-row { max-width:100%; }
+  .ceyo-app-frame .cx-composer-wrap { left:24px; right:24px; max-width:820px; margin-inline:auto; }
+  .ceyo-app-frame .cx-chat .cx-composer { background:var(--desktop-surface); backdrop-filter:none; box-shadow:none; border:1px solid var(--desktop-line); }
+  html:not([data-app-copy-restricted]) .cx-bubble { user-select:text; -webkit-user-select:text; -webkit-touch-callout:default; }
+}

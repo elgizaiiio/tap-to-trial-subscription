@@ -1,0 +1,1 @@
+CREATE POLICY channel_pairing_service ON public.channel_pairings FOR ALL TO service_role USING(true) WITH CHECK(true); CREATE POLICY channel_delivery_service ON public.channel_deliveries FOR ALL TO service_role USING(true) WITH CHECK(true);

@@ -1,0 +1,7 @@
+- Keep applicationId stable after the first Play upload and increment versionCode for every subsequent upload. Why: Play identifies updates by the package and version.
+- Keep upload keys/passwords outside source and source archives; when the owner requests signing here, use a secure-form password and deliver a password-protected upload keystore for owner backup. Why: release ownership must not rely on temporary sandbox keys.
+- The Capacitor shell loads the configured HTTPS origin; never expose private keys or enable arbitrary-origin JS interfaces. Why: only the trusted app should reach native capabilities.
+- Native Billing returns purchase tokens to the authenticated server for verification; do not grant access or mark orders paid in native code. Why: store UI success is not entitlement verification.
+- Select offers by configured basePlanId/offerId and validated phase terms, with regular-plan fallback for ineligible users. Why: Play offer array order is not a promotion contract.
+- Android uses the Capacitor shell and trusted native Play Billing plugin; the server verifies purchases before granting plans. Why: no web payment inside the store app and no client-side entitlement grants.
+- Android Google uses system-browser PKCE and /auth/native-return → ceyo://auth/callback. Why: no Google WebView or session tokens in links.
