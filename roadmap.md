@@ -1,3 +1,8 @@
+## Android assistant repair — 2026-11-16
+- [ ] Correct wake-word token validation and service/microphone lifecycle; prevent recognizer self-selection.
+- [ ] Sync primary robot identity and show stateful robot in assistant, widget and compact/expanded notifications; deliver actual replies.
+- [ ] Build, sign and share Ceyo Try v8; document device/deployment limits.
+
 # Current requests (Nov 2026)
 - [ ] Direct Play update: Google rejected versionCode 3 because the supplied signing key is not the registered upload key; needs the original upload key or owner-approved Play Console upload-key reset. Existing alpha closed-testing release remains versionCode 2; no tester lists changed.
 - [x] Recover missing Android source or regenerate the trusted Capacitor shell; build and verify an AAB using the supplied upload key (2026-11-16 continuation). Regenerated source, native trial validation test, signed versionCode 3 / 1.0.2, bundletool validation and matching certificate.
