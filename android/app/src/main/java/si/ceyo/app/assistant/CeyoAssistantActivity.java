@@ -34,6 +34,7 @@ public class CeyoAssistantActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         String p = getIntent().getStringExtra("prompt_prefix");
         if (p != null && p.length() < 200) prefix = p;
+        if (!getIntent().getBooleanExtra("no_island", false) && CeyoIslandService.show(this, prefix)) { finish(); return; }
         getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE | android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         FrameLayout root = new FrameLayout(this);
@@ -69,10 +70,7 @@ public class CeyoAssistantActivity extends Activity {
     private void start() {
         if (leaving || isFinishing()) return;
         // stopService is asynchronous in :wake. Wait until its AudioRecord is released.
-        if (new java.io.File(getFilesDir(), "wake_init").exists()) {
-            if (handoverChecks++ < 20) { live.setText("بجهز الميكروفون…"); handler.postDelayed(this::start, 100); return; }
-            unavailable("الميكروفون مشغول بتطبيق آخر"); return;
-        }
+        if (CeyoWakeService.micBusy(this) && handoverChecks++ < 15) { live.setText("بجهز الميكروفون…"); handler.postDelayed(this::start, 100); return; }
         handoverChecks = 0;
         destroyRecognizer();
         ComponentName service = CeyoRecognizer.find(this);
@@ -90,7 +88,7 @@ public class CeyoAssistantActivity extends Activity {
                     long delay = CeyoListeningPolicy.retryDelay(e, retries);
                     if (e != SpeechRecognizer.ERROR_NO_MATCH && e != SpeechRecognizer.ERROR_SPEECH_TIMEOUT) retries++;
                     if (delay >= 0) { live.setText("بسمعك…"); orb.state("talking"); handler.postDelayed(CeyoAssistantActivity.this::start, delay); }
-                    else unavailable(e == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ? "اسمح باستخدام الميكروفون من الإعدادات" : "خدمة الصوت غير متاحة حاليًا");
+                    else unavailable(CeyoListeningPolicy.describe(e) + " (" + e + ")");
                 }
                 public void onResults(Bundle r) { ArrayList<String> w = r.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION); if (w != null && !w.isEmpty() && !w.get(0).trim().isEmpty()) openApp(w.get(0), true); else handler.postDelayed(CeyoAssistantActivity.this::start, 500); }
                 public void onPartialResults(Bundle r) { ArrayList<String> w = r.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION); if (w != null && !w.isEmpty()) live.setText(w.get(0)); }

@@ -84,7 +84,7 @@ const Group = ({ children, title }: { children: ReactNode; title?: string }) => 
 
 const Toggle = ({ on }: { on: boolean }) => <span className="ceyo-switch" data-on={on}><i /></span>;
 /** Android-only assistant switches; every value lives on the phone and is read back after each change. */
-function PhoneAssistantGroup() {
+function PhoneSettings({ nav }: { nav: Nav }) {
   const [st, setSt] = useState<PhoneAssistantStatus | null>(null);
   const refresh = () => setSt(phoneStatus());
   const toggle = (key: "wake_on" | "car_on" | "guard_links" | "guard_bills") => {
@@ -114,6 +114,12 @@ function PhoneAssistantGroup() {
   const modeName: Record<ScreenMode, string> = { off: "Off", notify: "Tell me", silence: "Silence & offer text reply" };
   const nextMode = modes[(modes.indexOf(st.screen_mode || "notify") + 1) % modes.length];
   return (
+    <Shell title="Phone settings" back={() => nav("/settings")}>
+    <Group title="Voice check">
+      <Row label="Test voice now" sub={st.recognizer === false ? "No speech service found — install or update the Google app" : "Opens the top island and listens; any problem is shown there"} onClick={() => phoneOpenSettings("test_voice")} />
+      <Row label="Show over other apps" sub="Needed so the robot appears at the top when you call it" value={st.overlay ? "Allowed" : "Allow"} onClick={() => { phoneOpenSettings("overlay"); later(); }} />
+      <Row label="Run in background" sub="Stops the phone from closing the listener to save battery" value={st.battery ? "Allowed" : "Allow"} onClick={() => { phoneOpenSettings("battery"); later(); }} />
+    </Group>
     <Group title="Phone assistant">
       <Row label="Ceyo as phone assistant" sub="Long-press power to talk" value={st.assistant ? "On" : "Set up"} onClick={() => phoneOpenSettings("assistant")} />
       <Row label={'Say "Hey Ceyo" / "يا سيو"'} sub={st.wake_status === "failed" ? "Microphone or voice engine unavailable" : st.wake_status === "listening" ? "Listening" : st.wake_status === "starting" ? "Starting…" : "Stopped"} checked={!!st.wake_on} right={<Toggle on={!!st.wake_on} />} onClick={() => toggle("wake_on")} />
@@ -126,6 +132,7 @@ function PhoneAssistantGroup() {
       <Row label="Bill reminders" checked={!!st.guard_bills} right={<Toggle on={!!st.guard_bills} />} onClick={() => toggle("guard_bills")} />
       <Row label="Unknown callers" sub={st.screening === false && st.screen_mode !== "off" ? "Allow Ceyo as call screener" : "Numbers not in your contacts"} value={modeName[st.screen_mode || "notify"]} onClick={() => { phoneScreenMode(nextMode); later(); }} />
     </Group>
+    </Shell>
   );
 }
 
@@ -211,7 +218,7 @@ function Main({ nav }: { nav: Nav }) {
         <Row label="Vault" sub="Saved labels and contact info on this device" onClick={() => nav("/settings/vault")} />
       </Group>
       <Group><Row label="Connect apps" sub="Search plugins" onClick={() => nav("/settings/apps")} /></Group>
-      <PhoneAssistantGroup />
+      {hasPhoneAssistant() && <Group><Row label="Phone settings" sub="Voice, Hey Ceyo, driving mode, guards and permissions" onClick={() => nav("/settings/android")} /></Group>}
       <Group title="Agent">
         <Row label="Permissions" sub={permissionSummary(permissions)} onClick={() => nav("/settings/permissions")} />
         <Row label="Phone calls" sub="Your mobile, agent numbers and call history" onClick={() => nav("/settings/phone")} />
@@ -875,6 +882,7 @@ export default function CeyoSettings() {
     case "devices": return <Devices nav={nav} />;
     case "computer": return <Computer nav={nav} />;
     case "phone": return <Phone nav={nav} />;
+    case "android": return <PhoneSettings nav={nav} />;
     case "permissions": return <Permissions nav={nav} />;
     case "memory": return <Memory nav={nav} />;
     case "appearance": return <Appearance nav={nav} />;

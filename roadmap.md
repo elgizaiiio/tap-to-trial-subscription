@@ -1,3 +1,11 @@
+## Top island assistant and phone settings page — 2026-11-16
+- [x] Wake word opens a non-focusable top overlay island (robot + live status), user keeps using the phone; full-screen assistant only when overlay permission is missing.
+- [x] Fix false "microphone used by another app": wake engine marks only while it holds AudioRecord and releases before opening the island.
+- [x] Add display-over-apps and background (battery) permissions, start/ready/done/error tones + haptics and plain Arabic error reasons with codes.
+- [x] Move all phone options to one "Phone settings" button inside Settings (/settings/android) with a "Test voice now" row.
+- [x] Built Ceyo Try 1.2.5-try code 11 (arm64, same certificate); JVM tests pass.
+- [ ] Publish web app so the new Phone settings page reaches the APK; device test of island/wake on Honor still needed.
+
 ## Active assistant repair and living handoff — 2026-11-16
 - [x] Restore private scheduler destination to current Lovable host, synchronize Vault signing value with encrypted GitHub secret; verification dispatch completed successfully at 12:18:56 UTC. Real due runs completed and one reply per run persisted.
 - [x] Verify owner's direct GitHub authorization, keep it outside source and remove temporary credential-bearing scripts; advise rotation because it appeared in chat.
