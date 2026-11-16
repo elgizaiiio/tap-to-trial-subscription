@@ -43,7 +43,7 @@ public class CeyoWakeService extends Service {
     /** Must be called while the app is on screen (Android blocks starting the microphone from the background). */
     public static void start(Context c) {
         java.io.File guard = new java.io.File(c.getFilesDir(), "wake_init");
-        if (guard.exists()) { // previous start crashed inside the voice engine: switch the feature off instead of crashing again
+        if (guard.exists() && !"starting".equals(health(c))) { // never mistake an in-flight initialization for a previous crash
             guard.delete(); try { java.nio.file.Files.write(new java.io.File(c.getFilesDir(), "wake_status").toPath(), "failed".getBytes()); } catch (Exception ignored) {}
             Routines.prefs(c).edit().putBoolean("wake_on", false).apply(); return;
         }
@@ -58,8 +58,9 @@ public class CeyoWakeService extends Service {
         if (running) return START_NOT_STICKY;
         health("starting");
         CeyoChannels.ensure(this);
-        NotificationCompat.Builder b = new NotificationCompat.Builder(this, CeyoChannels.LIVE).setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Ceyo مستنيك").setContentText("قول \"يا سيو\" أو \"Hey Ceyo\"").setOngoing(true)
+        NotificationCompat.Builder b = new NotificationCompat.Builder(this, CeyoChannels.LIVE).setSmallIcon(R.drawable.ceyo_notification_icon)
+            .setLargeIcon(CeyoRobot.bitmap(this, "idle", 128))
+            .setContentTitle(CeyoRobot.name(this) + " مستنيك").setContentText("قول \"يا سيو\" أو \"Hey Ceyo\"").setOngoing(true)
             .setContentIntent(CeyoIntents.listen(this, 901)).setPriority(NotificationCompat.PRIORITY_MIN);
         try { ServiceCompat.startForeground(this, 900, b.build(), Build.VERSION.SDK_INT >= 30 ? ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE : 0); }
         catch (Exception e) { health("failed"); stopSelf(); return START_NOT_STICKY; }
@@ -90,7 +91,7 @@ public class CeyoWakeService extends Service {
             stream = kws.createStream("");
             guard.delete();
             int size = Math.max(AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT), 3200);
-            rec = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size * 2);
+            rec = new AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size * 2);
             recorder = rec;
             if (rec.getState() != AudioRecord.STATE_INITIALIZED) throw new IllegalStateException("Microphone unavailable");
             rec.startRecording();
@@ -108,13 +109,14 @@ public class CeyoWakeService extends Service {
                 if (hit != null && !hit.isEmpty()) { kws.reset(stream); woke(); break; }
             }
         } catch (Throwable error) {
-            health("failed");
+            if (running) health("failed");
             android.util.Log.e("CeyoWake", "Wake engine unavailable: " + error.getClass().getSimpleName());
         } finally {
             if (rec != null) try { rec.stop(); rec.release(); } catch (Exception ignored) { }
             if (stream != null) try { stream.release(); } catch (Throwable ignored) { }
             if (kws != null) try { kws.release(); } catch (Throwable ignored) { }
             recorder = null; running = false;
+            new java.io.File(getFilesDir(), "wake_init").delete();
             stopSelf();
         }
     }
@@ -131,6 +133,6 @@ public class CeyoWakeService extends Service {
         stopSelf();
     }
 
-    @Override public void onDestroy() { running = false; AudioRecord r = recorder; if (r != null) try { r.stop(); } catch (Exception ignored) {} super.onDestroy(); }
+    @Override public void onDestroy() { running = false; if ("listening".equals(health(this))) health("off"); AudioRecord r = recorder; if (r != null) try { r.stop(); } catch (Exception ignored) {} super.onDestroy(); }
     @Override public IBinder onBind(Intent i) { return null; }
 }

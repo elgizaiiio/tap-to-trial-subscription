@@ -46,7 +46,7 @@ public final class CeyoRobot {
         public void state(String value) { state = value; invalidate(); }
         @Override protected void onDraw(Canvas canvas) {
             int size = Math.min(getWidth(), getHeight());
-            draw(getContext(), canvas, state, size, android.os.SystemClock.uptimeMillis() / 220f);
+            CeyoRobot.draw(getContext(), canvas, state, size, android.os.SystemClock.uptimeMillis() / 220f);
             if (isAttachedToWindow() && !state.equals("idle")) postInvalidateDelayed(50);
         }
     }
