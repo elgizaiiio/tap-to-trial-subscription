@@ -1,0 +1,9 @@
+.android-splash { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; background: #000; transition: opacity .4s ease; }
+.android-splash.is-leaving { opacity: 0; pointer-events: none; }
+.android-splash-loader { display: block; width: 84px; height: 84px; position: relative; }
+.android-splash-loader::before, .android-splash-loader::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; width: 64px; height: 64px; border-radius: 50%;
+  background: #fff; transform: translate(-50%, -100%) scale(0); animation: push_401 2s infinite linear;
+}
+.android-splash-loader::after { animation-delay: 1s; }
+@keyframes push_401 { 0%, 50% { transform: translate(-50%, 0%) scale(1); } 100% { transform: translate(-50%, -100%) scale(0); } }

@@ -113,6 +113,12 @@ export function CheckoutSheet({ tier, name, interval, onClose }: { tier: Tier; n
     native?.purchase?.(JSON.stringify({ productId: playProductId(tier, interval), accountId: data.user?.id }));
   };
 
+  // Android: open Google Play's own sheet right away instead of showing an extra card step first.
+  useEffect(() => {
+    if (androidBilling) void payPlay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const payCard = async () => {
     const [mm, yy] = card.exp.split("/");
     if (card.number.length < 13 || !card.name.trim() || !mm || !yy || card.cvv.length < 3) { setError("Check your card details."); return; }
