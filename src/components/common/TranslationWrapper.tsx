@@ -11,6 +11,8 @@ import {
   startEgyptianDom,
   stopEgyptianDom,
 } from "@/lib/i18n/egyptianDom";
+import { startInterfaceTranslation } from "@/lib/i18n/interfaceDom";
+import { normalizeAppLanguage } from "@/lib/i18n/bundledLocales";
 
 interface TranslationWrapperProps {
   children: ReactNode;
@@ -20,9 +22,7 @@ interface TranslationWrapperProps {
  * Keeps <html lang/dir> in sync with the selected language and, when the user
  * is on المصري, applies the bundled Egyptian dictionary to the rendered UI.
  *
- * The app ships exactly two languages (English + Egyptian Arabic) and the
- * whole dictionary lives inside the JS bundle, so there is no dictionary
- * download and no network round-trip — only in-memory hash lookups.
+ * Interface dictionaries are bundled; runtime translation never contacts a service.
  */
 const TranslationWrapper = ({ children }: TranslationWrapperProps) => {
   const lang = useUserLang();
@@ -35,12 +35,20 @@ const TranslationWrapper = ({ children }: TranslationWrapperProps) => {
     } else {
       void initUserLang();
     }
+    const onLanguage = (event: Event) => {
+      const code = (event as CustomEvent<string>).detail;
+      if (code === "system") { void initUserLang(); return; }
+      const language = normalizeAppLanguage(code || "");
+      if (language) void setUserLang(language, { syncRemote: false });
+    };
+    window.addEventListener("ceyo:language", onLanguage);
+    return () => window.removeEventListener("ceyo:language", onLanguage);
   }, []);
 
   useEffect(() => {
     if (lang !== "ar-eg") {
       stopEgyptianDom();
-      return undefined;
+      return lang === "en" ? undefined : startInterfaceTranslation(lang);
     }
 
     startEgyptianDom();

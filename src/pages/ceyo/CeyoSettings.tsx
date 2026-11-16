@@ -29,6 +29,7 @@ import { readPageState, writePageState } from "@/lib/pageStateCache";
 import { useLocalPlanPrices } from "@/hooks/useLocalPlanPrices";
 import { formatLocalPrice } from "@/lib/payments/localPrices";
 import { readSetting, saveSetting } from "./settingsStorage";
+import { APP_LANGUAGES } from "@/lib/i18n/bundledLocales";
 
 type Nav = (to: string) => void;
 
@@ -724,10 +725,7 @@ function Appearance({ nav }: { nav: Nav }) {
 }
 
 const LANGUAGES: [string, string][] = [
-  ["system", "System"], ["ar", "العربية"], ["zh-CN", "简体中文"], ["zh-TW", "繁體中文"],
-  ["en", "English"], ["hi", "हिन्दी"], ["pl", "Polski"], ["es", "Español"],
-  ["pt", "Português"], ["ja", "日本語"], ["fr", "Français"], ["ko", "한국어"],
-  ["de", "Deutsch"], ["tr", "Türkçe"],
+  ["system", "System"], ...APP_LANGUAGES.map(([code, name]): [string, string] => [code, name]),
 ];
 
 function Language({ nav }: { nav: Nav }) {

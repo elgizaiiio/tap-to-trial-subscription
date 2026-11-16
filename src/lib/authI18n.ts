@@ -20,12 +20,13 @@ import { EGYPTIAN_PAGES } from "@/lib/i18n/egyptianPages";
 import { EGYPTIAN_PAGES_2 } from "@/lib/i18n/egyptianPages2";
 import { EGYPTIAN_PAGES_4 } from "@/lib/i18n/egyptianPages4";
 import { setPayRegion } from "@/lib/payRegion";
+import { APP_LANGUAGES, bundledText, normalizeAppLanguage, type AppLanguage } from "./i18n/bundledLocales";
 
 
-export type AuthLang = "en" | "ar-eg";
+export type AuthLang = AppLanguage;
 
-const SUPPORTED: AuthLang[] = ["en", "ar-eg"];
-const RTL_LANGS: AuthLang[] = ["ar-eg"];
+const SUPPORTED: AuthLang[] = APP_LANGUAGES.map(([code]) => code);
+const RTL_LANGS: AuthLang[] = ["ar-eg", "fa", "ur"];
 
 type Entry = Partial<Record<AuthLang, string>> & { en: string };
 
@@ -220,9 +221,12 @@ export function isSupportedLang(code: string): code is AuthLang {
 export function readStoredLang(): AuthLang | null {
   try {
     const raw = typeof localStorage !== "undefined"
-      ? localStorage.getItem(STORAGE_KEY) || localStorage.getItem("language")
+      ? localStorage.getItem("ceyo_language") || localStorage.getItem(STORAGE_KEY) || localStorage.getItem("language")
       : null;
     if (!raw) return null;
+    if (raw === "system") return detectLang();
+    const normalized = normalizeAppLanguage(raw);
+    if (normalized) return normalized;
     const lower = raw.toLowerCase();
     if (isSupportedLang(lower)) return lower;
     const base = lower.split("-")[0];
@@ -240,7 +244,10 @@ export function detectLang(): AuthLang {
     const tags = [navigator.language || "", ...(navigator.languages || [])].map((s) =>
       s.toLowerCase(),
     );
-    if (tags.some((tag) => tag.startsWith("ar"))) return "ar-eg";
+    for (const tag of tags) {
+      const language = normalizeAppLanguage(tag);
+      if (language) return language;
+    }
   } catch {
     // ignore
   }
@@ -251,16 +258,14 @@ let currentLang: AuthLang | null = null;
 
 /** Current effective language: explicit stored choice → English. */
 export function getUserLang(): AuthLang {
-  // The app is English-only for now.
-  currentLang = "en";
-  return currentLang;
+  return currentLang ?? readStoredLang() ?? "en";
 }
 
 function applyHtmlLang(lang: AuthLang) {
   currentLang = lang;
   if (typeof document === "undefined") return;
   const rtl = RTL_LANGS.includes(lang);
-  document.documentElement.setAttribute("lang", lang === "ar-eg" ? "ar" : "en");
+  document.documentElement.setAttribute("lang", lang === "ar-eg" ? "ar" : lang);
   document.documentElement.setAttribute("dir", rtl ? "rtl" : "ltr");
 }
 
@@ -305,7 +310,6 @@ export async function setUserLang(
   opts: { syncRemote?: boolean } = {},
 ): Promise<void> {
   if (!isSupportedLang(lang)) return;
-  lang = "en"; // English-only for now.
   persistLangLocally(lang);
   applyHtmlLang(lang);
   applyZoneForLang(lang);
@@ -340,8 +344,7 @@ export async function setUserLang(
  * the first visit so the choice stays stable.
  */
 export async function initUserLang(): Promise<AuthLang> {
-  // English-only for now: override any stored choice.
-  const lang: AuthLang = "en";
+  const lang: AuthLang = readStoredLang() ?? "en";
   persistLangLocally(lang);
   applyHtmlLang(lang);
   applyZoneForLang(lang);
@@ -368,7 +371,7 @@ export function t(key: string, lang?: AuthLang): string {
   const L = lang || getUserLang();
   const entry = (DICT as Record<string, Entry>)[key] || UI_DICT[key];
   if (!entry) return String(key);
-  return entry[L] || entry.en;
+  return entry[L] || bundledText(entry.en, L);
 }
 
 
@@ -414,10 +417,7 @@ export function translateAuthError(
   return t(fallbackKey);
 }
 
-export const AVAILABLE_LANGS: { code: AuthLang; label: string; native: string }[] = [
-  { code: "en", label: "English — International zone", native: "English" },
-  { code: "ar-eg", label: "العربية — المنطقة العربية", native: "العربية" },
-];
+export const AVAILABLE_LANGS: { code: AuthLang; label: string; native: string }[] = APP_LANGUAGES.map(([code, native]) => ({ code, label: native, native }));
 
 /**
  * Translate a literal English string by looking it up in the in-file
@@ -437,7 +437,8 @@ export function translateExactText(text: string, lang?: AuthLang): string {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) return text;
   const entry = BY_ENGLISH.get(normalized);
-  if (entry) return entry[L] || entry.en;
+  if (entry) return entry[L] || bundledText(entry.en, L);
+  if (L !== "ar-eg") return bundledText(normalized, L);
   // Fall back to the bundled Egyptian dictionaries (same data the DOM pass uses).
   return (
     EGYPTIAN_EXTRA[normalized] ||

@@ -36,7 +36,7 @@ export const WelcomeEmail = ({ name, trialEndsAt }: WelcomeProps) => {
       <Section style={{ margin: '56px 0 0', borderTop: `1px solid ${line}` }}>
         <Row>
           {[
-            ['Free trial', until ? `3 days · until ${until}` : '3 days'],
+            ['Free trial', until ? `3 days · until ${until}` : '3 days · eligible subscriptions'],
             ['Every bot', 'Its own computer'],
             ['Connects to', '1,000+ apps'],
           ].map(([k, v]) => (
@@ -60,7 +60,7 @@ export const WelcomeEmail = ({ name, trialEndsAt }: WelcomeProps) => {
       <Section style={{ backgroundColor: soft, borderRadius: 24, padding: '44px 24px', margin: '56px 0 0', textAlign: 'center' }}>
         <Heading as="h2" style={{ fontSize: 34, fontWeight: 500, lineHeight: '1.1', margin: '0 0 14px', color: ink }}>Your bots are waiting</Heading>
         <Text style={{ fontSize: 16, lineHeight: '1.7', color: muted, margin: '0 0 22px' }}>
-          {until ? `Your free trial is on until ${until}. Build your first team of bots in a minute.` : 'Build your first team of bots in a minute.'}
+          {until ? `Your free trial is on until ${until}. Build your first team of bots in a minute.` : 'Eligible new Google Play subscribers can start a 3-day trial after confirming a payment method. The subscription renews at the displayed price unless cancelled.'}
         </Text>
         <Pill href={APP_URL}>Open Ceyo</Pill>
       </Section>
@@ -72,5 +72,5 @@ export const template = {
   component: WelcomeEmail,
   subject: (d: Record<string, any>) => (d?.name ? `Welcome to Ceyo, ${String(d.name).slice(0, 40)}` : 'Welcome to Ceyo'),
   displayName: 'Welcome',
-  previewData: { name: 'Alex', trialEndsAt: '2026-11-19T08:00:00Z' },
+  previewData: { name: 'Alex' },
 } satisfies TemplateEntry
