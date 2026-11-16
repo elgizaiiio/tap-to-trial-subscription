@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "509747183338",
+    "project_id": "ai-try-ca6aa",
+    "storage_bucket": "ai-try-ca6aa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509747183338:android:20bbaf5ecac2c5f75e2193",
+        "android_client_info": {
+          "package_name": "si.ceyo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCp1izDxmGddyHDyq_RxJh5Gwxsby5b8HI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
