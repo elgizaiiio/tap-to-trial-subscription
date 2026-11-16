@@ -11,3 +11,5 @@
 
 - Native assistant recognition selects an external SpeechRecognizer component explicitly; native status notifications use real chat steps and reply text, while primary identity is synced by the authenticated home. Why: selecting the assistant itself recursively fails, and the composer has no final answer data.
 - Android trial artifacts are selected through CEYO_ANDROID_TRY with a distinct package and build-generated label; skip production Firebase configuration in trial builds. Why: test installs must coexist without modifying the production identifier or binding an unrelated Firebase app.
+- Pass wake activation in service intents instead of rereading cross-process SharedPreferences; preserve live JNI markers and reset denied toggles. Why: the isolated wake process has a stale preferences cache and must not silently ignore later activation.
+- Assistant overlays use transparent robot/edge views; speech timeout/no-match automatically rearm, while denied/missing services and hard errors stop with bounded backoff. Why: hands-free silence is normal, but an unavailable recognizer must not spin forever.
