@@ -72,7 +72,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/ceyo_widget_info" />
         </receiver>
 
-        <service android:name=".assistant.CeyoWakeService" android:exported="false" android:foregroundServiceType="microphone" />
+        <service android:name=".assistant.CeyoWakeService" android:process=":wake" android:exported="false" android:foregroundServiceType="microphone" />
         <service android:name=".assistant.CeyoCallScreener" android:exported="true" android:permission="android.permission.BIND_SCREENING_SERVICE">
             <intent-filter><action android:name="android.telecom.CallScreeningService" /></intent-filter>
         </service>

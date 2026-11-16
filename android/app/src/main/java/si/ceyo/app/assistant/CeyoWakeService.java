@@ -33,6 +33,10 @@ public class CeyoWakeService extends Service {
 
     /** Must be called while the app is on screen (Android blocks starting the microphone from the background). */
     public static void start(Context c) {
+        java.io.File guard = new java.io.File(c.getFilesDir(), "wake_init");
+        if (guard.exists()) { // previous start crashed inside the voice engine: switch the feature off instead of crashing again
+            guard.delete(); Routines.prefs(c).edit().putBoolean("wake_on", false).apply(); return;
+        }
         if (!enabled(c) || c.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return;
         Intent i = new Intent(c, CeyoWakeService.class);
         try { if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i); else c.startService(i); } catch (Exception ignored) { }
@@ -46,8 +50,8 @@ public class CeyoWakeService extends Service {
             .setContentIntent(CeyoIntents.listen(this, 901)).setPriority(NotificationCompat.PRIORITY_MIN);
         try { ServiceCompat.startForeground(this, 900, b.build(), Build.VERSION.SDK_INT >= 30 ? ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE : 0); }
         catch (Exception e) { stopSelf(); return START_NOT_STICKY; }
-        if (!running) { running = true; loop = new Thread(this::listen, "ceyo-wake"); loop.start(); }
-        return START_STICKY;
+        if (!running && (Build.VERSION.SDK_INT < 23 || checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)) { running = true; loop = new Thread(this::listen, "ceyo-wake"); loop.start(); }
+        return START_NOT_STICKY;
     }
 
     private void listen() {
@@ -61,10 +65,14 @@ public class CeyoWakeService extends Service {
             FeatureConfig f = new FeatureConfig(); f.setSampleRate(16000); f.setFeatureDim(80);
             cfg.setFeatConfig(f); cfg.setModelConfig(m); cfg.setKeywordsFile("ceyo-voice/kws/keywords.txt");
             cfg.setKeywordsThreshold(0.2f); cfg.setKeywordsScore(1.5f);
+            java.io.File guard = new java.io.File(getFilesDir(), "wake_init");
+            try { guard.createNewFile(); } catch (Exception ignored) { }
             kws = new KeywordSpotter(getAssets(), cfg);
             stream = kws.createStream("");
+            guard.delete();
             int size = Math.max(AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT), 3200);
             rec = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size * 2);
+            if (rec.getState() != AudioRecord.STATE_INITIALIZED) return;
             rec.startRecording();
             short[] buf = new short[1600];
             float[] samples = new float[1600];
@@ -80,8 +88,8 @@ public class CeyoWakeService extends Service {
         } catch (Throwable ignored) {
         } finally {
             if (rec != null) try { rec.stop(); rec.release(); } catch (Exception ignored) { }
-            if (stream != null) stream.release();
-            if (kws != null) kws.release();
+            if (stream != null) try { stream.release(); } catch (Throwable ignored) { }
+            if (kws != null) try { kws.release(); } catch (Throwable ignored) { }
             running = false;
         }
     }
