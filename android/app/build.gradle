@@ -7,8 +7,8 @@ android {
         applicationId "si.ceyo.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode = (System.getenv('CEYO_ANDROID_VERSION_CODE') ?: '3').toInteger()
-        versionName "1.0.2"
+        versionCode = (System.getenv('CEYO_ANDROID_VERSION_CODE') ?: '4').toInteger()
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
