@@ -630,9 +630,7 @@
 
 ## Android assistant (v1.1.0 / versionCode 4)
 - [x] Native: power-button assistant + listening sheet, robot widget (home/lock), quick tile, share-to-Ceyo, live "bot working" notification, bot calls ringing when app closed (scheduled), gentle alarm, morning briefing, night reflection, car mode, on-phone scam-link and bill alerts, offline phone speech. Test APK + AAB built and signed with the new upload key.
-- [ ] Settings screen toggles for morning/night times, car mode and alert switches (bridge methods exist; no UI yet).
-- [ ] "Hey Ceyo" wake word — needs a wake-word engine licence/model (e.g. Picovoice access key).
-- [ ] Bundled neural voice (Piper) — adds ~20–60 MB; phone voices used for now.
-- [ ] Calls/updates created while app fully closed — need Firebase push (google-services.json + server key).
-- [ ] AI call screener for unknown numbers — not started.
+- [x] v1.2.0 (code 5): settings "Phone assistant" group; "Hey Ceyo / يا سيو" on-phone wake word (sherpa-onnx, free, no key); bundled Arabic neural voice (Piper kareem); unknown-caller guard (silence/notify/reject spoofed + text reply); push receiver for closed-app calls.
+- [ ] Closed-app call push: waiting on owner's Firebase setup (google-services.json + FCM sender permission); server sender not written yet.
+- [ ] Wake-word accuracy for Arabic "يا سيو" untested on a real phone (English-trained model, phonetic keywords).
 - [ ] Publish web app so the phone shell gets the new chat hand-off/live-update code.
