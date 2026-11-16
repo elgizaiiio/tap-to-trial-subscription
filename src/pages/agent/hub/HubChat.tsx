@@ -104,7 +104,6 @@ function Composer({
   onSend,
   onStop,
   onUnqueue,
-  onNew,
   onConnect,
   members = [],
 }: {
@@ -118,7 +117,6 @@ function Composer({
   onSend: (text: string, origin?: RecordingOrigin, images?: string[]) => void;
   onStop: () => void;
   onUnqueue: (id: string) => void;
-  onNew: () => void;
   onConnect: () => void;
   members?: AgentInfo[];
 }) {
@@ -735,7 +733,6 @@ export function HubChat({
           onSend={(text, origin, images) => { setPinned(true); setSelectable(null); if (!sessionId && !demo) void startConversation(text, origin, images); else s.send(text, images || [], origin); }}
           onStop={s.stop}
           onUnqueue={s.unqueue}
-          onNew={() => onSession(null)}
           onConnect={() => nav("/settings/apps")}
           members={group ? agents.filter((a) => group.memberIds.includes(a.id)) : undefined}
         />

@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.BridgeWebViewClient;
 import si.ceyo.app.assistant.CeyoChannels;
 import si.ceyo.app.assistant.CeyoIntents;
 import si.ceyo.app.assistant.MegsyBridge;
@@ -15,7 +16,16 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         CeyoChannels.ensure(this);
         WebView web = getBridge().getWebView();
-        web.addJavascriptInterface(new MegsyBridge(this, web), "MegsyAndroid");
+        MegsyBridge assistant = new MegsyBridge(this, web);
+        getBridge().setWebViewClient(new BridgeWebViewClient(getBridge()) {
+            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                assistant.pageChanged(url); super.onPageStarted(view, url, favicon);
+            }
+            @Override public void onPageFinished(WebView view, String url) {
+                assistant.pageChanged(url); super.onPageFinished(view, url);
+            }
+        });
+        web.addJavascriptInterface(assistant, "MegsyAndroid");
         web.getSettings().setMediaPlaybackRequiresUserGesture(false);
         handleLaunch(getIntent());
     }
