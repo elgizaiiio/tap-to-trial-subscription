@@ -22,7 +22,7 @@ const safe = (fn: () => void) => { try { fn(); } catch { /* bridge errors never 
 
 export const hasPhoneAssistant = () => !!api()?.liveUpdate;
 
-export type PhonePrompt = { text: string; send: boolean };
+export type PhonePrompt = { text: string; send: boolean; voice?: boolean };
 const KEY = "ceyo:phone-prompt";
 
 /** Reads a prompt the phone passed in the URL, strips it from the address bar and keeps it until a chat takes it. */
@@ -31,9 +31,10 @@ export function capturePhonePrompt(href?: string): PhonePrompt | null {
   const url = new URL(href ?? window.location.href);
   const raw = url.searchParams.get("ceyoPrompt");
   if (raw === null) return peekPhonePrompt();
-  const prompt: PhonePrompt = { text: raw.slice(0, 1500), send: url.searchParams.get("ceyoSend") === "1" };
+  const prompt: PhonePrompt = { text: raw.slice(0, 1500), send: url.searchParams.get("ceyoSend") === "1", ...(url.searchParams.get("ceyoVoice") === "1" ? { voice: true } : {}) };
   url.searchParams.delete("ceyoPrompt");
   url.searchParams.delete("ceyoSend");
+  url.searchParams.delete("ceyoVoice");
   if (!href) window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
   if (!prompt.text.trim()) return null;
   try { sessionStorage.setItem(KEY, JSON.stringify(prompt)); } catch { /* storage unavailable */ }
@@ -43,12 +44,13 @@ export function capturePhonePrompt(href?: string): PhonePrompt | null {
 export function peekPhonePrompt(): PhonePrompt | null {
   try {
     const v = JSON.parse(sessionStorage.getItem(KEY) || "null");
-    return v && typeof v.text === "string" && v.text.trim() ? { text: v.text, send: !!v.send } : null;
+    return v && typeof v.text === "string" && v.text.trim() ? { text: v.text, send: !!v.send, ...(v.voice === true ? { voice: true } : {}) } : null;
   } catch { return null; }
 }
 
 export function consumePhonePrompt(): PhonePrompt | null {
   const p = peekPhonePrompt();
+  if (p?.voice && p.send) try { sessionStorage.setItem("ceyo:voice-reply", "1"); } catch { /* optional */ }
   try { sessionStorage.removeItem(KEY); } catch { /* ignore */ }
   return p;
 }
@@ -69,13 +71,18 @@ export function phoneReply(turn?: { text: string; running: boolean; stopped: boo
   return turn.text.replace(/```[\s\S]*?```/g, "").replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/[*_#`]/g, "").trim().slice(0, 1500);
 }
 export function phoneSpeak(text: string, lang?: string): boolean {
-  const fn = api()?.speak; if (!fn) return false; safe(() => fn(JSON.stringify({ text, lang }))); return true;
+  const a = api(); if (!a?.speak) return false;
+  try { a.speak(JSON.stringify({ text, lang })); return true; } catch { return false; }
+}
+export function takePhoneVoiceReply(): boolean {
+  try { const on = sessionStorage.getItem("ceyo:voice-reply") === "1"; sessionStorage.removeItem("ceyo:voice-reply"); return on; } catch { return false; }
 }
 export function phoneRoutine(kind: "morning" | "night", hour: number, minute: number, on: boolean): void {
   const fn = api()?.setRoutine; if (fn) safe(() => fn(JSON.stringify({ kind, hour, minute, on })));
 }
-export function phoneOption(key: "car_on" | "guard_links" | "guard_bills" | "wake_on", on: boolean): void {
-  const fn = api()?.setOption; if (fn) safe(() => fn(JSON.stringify({ key, on })));
+export function phoneOption(key: "car_on" | "guard_links" | "guard_bills" | "wake_on", on: boolean): boolean {
+  const a = api(); if (!a?.setOption) return false;
+  try { a.setOption(JSON.stringify({ key, on })); return true; } catch { return false; }
 }
 export type ScreenMode = "off" | "notify" | "silence";
 export function phoneScreenMode(value: ScreenMode): void {
@@ -87,5 +94,9 @@ export function phoneOpenSettings(which: "assistant" | "listener" | "notificatio
 export type PhoneAssistantStatus = Partial<Record<"notifications" | "listener" | "assistant" | "car_on" | "guard_links" | "guard_bills" | "morning_on" | "night_on" | "wake_on" | "screening" | "bundled_voice", boolean>> & { wake_status?: string; screen_mode?: ScreenMode } & Partial<Record<"morning_h" | "morning_m" | "night_h" | "night_m" | "digest_count", number>>;
 export function phoneStatus(): PhoneAssistantStatus | null {
   const a = api(); if (!a?.status) return null;
-  try { return JSON.parse(a.status()) as PhoneAssistantStatus; } catch { return null; }
+  try {
+    const value: unknown = JSON.parse(a.status());
+    if (!value || typeof value !== "object" || !("wake_on" in value) || typeof value.wake_on !== "boolean") return null;
+    return value as PhoneAssistantStatus;
+  } catch { return null; }
 }

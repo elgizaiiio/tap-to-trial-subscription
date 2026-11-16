@@ -117,7 +117,7 @@ public class MegsyBridge {
         String kind = o.optString("kind");
         if (!CeyoAlarmReceiver.KIND_MORNING.equals(kind) && !CeyoAlarmReceiver.KIND_NIGHT.equals(kind)) return;
         Routines.set(ctx(), kind, Math.max(0, Math.min(23, o.optInt("hour", 7))), Math.max(0, Math.min(59, o.optInt("minute", 0))), o.optBoolean("on")); }
-    @JavascriptInterface public void setOption(String json) { if (!trusted()) return; JSONObject o = parse(json);
+    @JavascriptInterface public void setOption(String json) { if (!trusted()) throw new SecurityException("Untrusted page"); JSONObject o = parse(json);
         String key = o.optString("key");
         if (key.equals("screen_mode")) {
             String mode = o.optString("value", "notify");
@@ -127,16 +127,18 @@ public class MegsyBridge {
             return;
         }
         if (!key.equals("car_on") && !key.equals("guard_links") && !key.equals("guard_bills") && !key.equals("wake_on")) return;
-        Routines.prefs(ctx()).edit().putBoolean(key, o.optBoolean("on")).apply();
+        boolean on = o.optBoolean("on");
+        Routines.prefs(ctx()).edit().putBoolean(key, on).commit();
         if (key.equals("wake_on")) {
-            if (o.optBoolean("on")) { new java.io.File(ctx().getFilesDir(), "wake_status").delete(); new java.io.File(ctx().getFilesDir(), "wake_init").delete(); }
+            // Never clear a marker while its live engine still owns the microphone.
+            if (on && !"listening".equals(CeyoWakeService.health(ctx())) && !"starting".equals(CeyoWakeService.health(ctx()))) { new java.io.File(ctx().getFilesDir(), "wake_status").delete(); new java.io.File(ctx().getFilesDir(), "wake_init").delete(); }
             if (!o.optBoolean("on")) { CeyoWakeService.stop(ctx()); return; }
             if (activity.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED)
                 activity.runOnUiThread(() -> activity.requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 53));
             else activity.runOnUiThread(() -> CeyoWakeService.start(activity));
             return;
         }
-        if (key.equals("car_on") && o.optBoolean("on") && Build.VERSION.SDK_INT >= 31)
+        if (key.equals("car_on") && on && Build.VERSION.SDK_INT >= 31 && activity.checkSelfPermission("android.permission.BLUETOOTH_CONNECT") != android.content.pm.PackageManager.PERMISSION_GRANTED)
             activity.runOnUiThread(() -> activity.requestPermissions(new String[]{"android.permission.BLUETOOTH_CONNECT"}, 52)); }
     private void requestScreeningRole() {
         if (Build.VERSION.SDK_INT < 29) return;

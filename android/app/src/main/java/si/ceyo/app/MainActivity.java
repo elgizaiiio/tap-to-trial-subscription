@@ -24,6 +24,9 @@ public class MainActivity extends BridgeActivity {
             @Override public void onPageFinished(WebView view, String url) {
                 assistant.pageChanged(url); super.onPageFinished(view, url);
             }
+            @Override public void doUpdateVisitedHistory(WebView view, String url, boolean reload) {
+                assistant.pageChanged(url); super.doUpdateVisitedHistory(view, url, reload);
+            }
         });
         web.addJavascriptInterface(assistant, "MegsyAndroid");
         web.getSettings().setMediaPlaybackRequiresUserGesture(false);
@@ -35,6 +38,9 @@ public class MainActivity extends BridgeActivity {
     @Override public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
         super.onRequestPermissionsResult(code, perms, res);
         if (code == 53 && res.length > 0 && res[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) si.ceyo.app.assistant.CeyoWakeService.start(this);
+        if ((code == 53 || code == 52) && (res.length == 0 || res[0] != android.content.pm.PackageManager.PERMISSION_GRANTED)) {
+            getSharedPreferences("ceyo_assistant", MODE_PRIVATE).edit().putBoolean(code == 53 ? "wake_on" : "car_on", false).commit();
+        }
     }
 
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); handleLaunch(intent); }

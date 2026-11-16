@@ -53,13 +53,15 @@ public class CeyoWakeService extends Service {
         if (guard.exists()) return;
         if ("failed".equals(health(c))) return;
         if (!enabled(c) || c.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return;
-        Intent i = new Intent(c, CeyoWakeService.class);
+        // SharedPreferences is not coherent across :wake and the main process.
+        Intent i = new Intent(c, CeyoWakeService.class).putExtra("enabled", true);
         try { if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i); else c.startService(i); } catch (Exception ignored) { }
     }
     public static void stop(Context c) { c.stopService(new Intent(c, CeyoWakeService.class)); }
 
     @Override public int onStartCommand(Intent in, int flags, int id) {
         if (running) return START_NOT_STICKY;
+        if (in == null || !in.getBooleanExtra("enabled", false)) { stopSelf(); return START_NOT_STICKY; }
         health("starting");
         CeyoChannels.ensure(this);
         NotificationCompat.Builder b = new NotificationCompat.Builder(this, CeyoChannels.LIVE).setSmallIcon(R.drawable.ceyo_notification_icon)

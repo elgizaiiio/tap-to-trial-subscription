@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="ceyo_edge_cyan">#65DCE7</color>
+    <color name="ceyo_edge_pink">#EAA1CF</color>
+    <color name="ceyo_edge_gold">#E8D994</color>
+    <color name="ceyo_edge_green">#98DCAF</color>
     <color name="ceyo_sheet_surface">#F5101114</color>
     <color name="ceyo_sheet_text">#F5F5F7</color>
     <color name="ceyo_sheet_muted">#B0B2BA</color>
