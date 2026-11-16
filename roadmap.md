@@ -1,3 +1,10 @@
+## Active assistant repair and living handoff — 2026-11-16
+- [ ] Repair wake/driving toggles with confirmed native state and permission handoff (never trust a fabricated URL).
+- [ ] Show transparent robot-only assistant preview; implement subtle multicolour screen edges and automatic listening renewal.
+- [ ] Connect real phone capabilities to assistant actions without claiming unrestricted notification access.
+- [ ] Run focused web/native tests, build/sign next Ceyo Try APK, and publish matching web changes when available.
+- [ ] Keep README, roadmap and docs/ASSISTANT-HANDOFF.md current at each work phase; record blockers and device-only verification separately. Do not copy credentials or private account data into GitHub.
+
 ## Unified chat and Android controls — 2026-11-16
 - [x] Show proposed assistant/notification design before native visual changes.
 - [x] Reuse owner-locked bot thread and combine paginated prior app-thread history without moving/deleting rows; messaging-channel threads stay separate.
