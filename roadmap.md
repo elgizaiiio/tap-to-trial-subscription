@@ -1,5 +1,6 @@
 ## Active assistant repair and living handoff — 2026-11-16
 - [ ] Diagnose and repair stopped AI scheduling, verify real due-run delivery; record external scheduler/deployment blockers.
+- [ ] Use owner's supplied direct GitHub authorization for private scheduler repair; keep it out of source, verify permissions, recommend rotation after use.
 - [ ] Repair wake/driving toggles with confirmed native state and permission handoff (never trust a fabricated URL).
 - [ ] Show transparent robot-only assistant preview; implement subtle multicolour screen edges and automatic listening renewal.
 - [ ] Connect real phone capabilities to assistant actions without claiming unrestricted notification access.
