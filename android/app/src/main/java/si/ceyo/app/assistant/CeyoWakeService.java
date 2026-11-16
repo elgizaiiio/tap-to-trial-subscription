@@ -43,6 +43,8 @@ public class CeyoWakeService extends Service {
         try { java.nio.file.Files.write(new java.io.File(getFilesDir(), "wake_status").toPath(), value.getBytes(java.nio.charset.StandardCharsets.UTF_8)); } catch (Exception ignored) {}
     }
 
+    /** True only while the wake engine itself holds AudioRecord. */
+    public static boolean micBusy(Context c) { java.io.File m = new java.io.File(c.getFilesDir(), "wake_mic"); return m.exists() && System.currentTimeMillis() - m.lastModified() < 600000; }
     public static boolean enabled(Context c) { return Routines.prefs(c).getBoolean("wake_on", false); }
 
     /** Must be called while the app is on screen (Android blocks starting the microphone from the background). */
@@ -107,6 +109,7 @@ public class CeyoWakeService extends Service {
             recorder = rec;
             if (rec.getState() != AudioRecord.STATE_INITIALIZED) throw new IllegalStateException("Microphone unavailable");
             rec.startRecording();
+            try { new java.io.File(getFilesDir(), "wake_mic").createNewFile(); } catch (Exception ignored) { }
             health("listening");
             short[] buf = new short[1600];
             float[] samples = new float[1600];
@@ -120,7 +123,8 @@ public class CeyoWakeService extends Service {
                 String hit = kws.getResult(stream).getKeyword();
                 if (hit != null && !hit.isEmpty()) {
                     rec.stop(); rec.release(); rec = null; recorder = null;
-                    woke(); break;
+                    new java.io.File(getFilesDir(), "wake_mic").delete();
+                    running = false; woke(); break;
                 }
             }
         } catch (Throwable error) {
@@ -131,6 +135,7 @@ public class CeyoWakeService extends Service {
             if (stream != null) try { stream.release(); } catch (Throwable ignored) { }
             if (kws != null) try { kws.release(); } catch (Throwable ignored) { }
             recorder = null; running = false;
+            new java.io.File(getFilesDir(), "wake_mic").delete();
             new java.io.File(getFilesDir(), "wake_init").delete();
             stopSelf();
         }
@@ -144,7 +149,8 @@ public class CeyoWakeService extends Service {
         CeyoAlarmReceiver.post(this, 902, new NotificationCompat.Builder(this, CeyoChannels.UPDATES)
             .setSmallIcon(R.drawable.ceyo_notification_icon).setContentTitle(CeyoRobot.name(this)).setContentText("أنا معاك — اتكلم")
             .setLargeIcon(CeyoRobot.bitmap(this, "talking", 128)).setContentIntent(CeyoIntents.listen(this, 902)).setAutoCancel(true));
-        try { CeyoIntents.listen(this, 902).send(); } catch (Exception ignored) { }
+        // With "display over other apps" Android allows this background start; it opens the top island, not a full screen.
+        if (!CeyoIslandService.show(this, null)) try { CeyoIntents.listen(this, 902).send(); } catch (Exception ignored) { }
         stopSelf();
     }
     private static String readText(java.io.InputStream in) throws java.io.IOException {

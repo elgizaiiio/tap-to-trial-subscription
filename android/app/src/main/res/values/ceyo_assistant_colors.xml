@@ -10,4 +10,5 @@
     <color name="ceyo_robot_light">#FFFFFF</color>
     <color name="ceyo_robot_shade">#D5D7DC</color>
     <color name="ceyo_robot_eyes">#16171B</color>
+    <color name="ceyo_island_surface">#F0000000</color>
 </resources>

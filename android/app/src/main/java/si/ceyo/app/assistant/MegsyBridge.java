@@ -158,6 +158,10 @@ public class MegsyBridge {
             s.put("screen_mode", p.getString("screen_mode", "notify"));
             s.put("bundled_voice", CeyoVoiceEngine.available(ctx()));
             s.put("wake_status", CeyoWakeService.health(ctx()));
+            s.put("overlay", CeyoIslandService.canShow(ctx()));
+            android.os.PowerManager pm = ctx().getSystemService(android.os.PowerManager.class);
+            s.put("battery", pm != null && pm.isIgnoringBatteryOptimizations(ctx().getPackageName()));
+            s.put("recognizer", CeyoRecognizer.find(ctx()) != null);
             if (Build.VERSION.SDK_INT >= 29) { android.app.role.RoleManager rm = activity.getSystemService(android.app.role.RoleManager.class);
                 s.put("screening", rm != null && rm.isRoleHeld(android.app.role.RoleManager.ROLE_CALL_SCREENING)); }
             for (String k : new String[]{"car_on", "guard_links", "guard_bills", "morning_on", "night_on", "wake_on"}) s.put(k, p.getBoolean(k, k.startsWith("guard")));
@@ -178,6 +182,9 @@ public class MegsyBridge {
                 }
                 i = new Intent(Settings.ACTION_VOICE_INPUT_SETTINGS); break;
             case "listener": i = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS); break;
+            case "overlay": i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + ctx().getPackageName())); break;
+            case "battery": i = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + ctx().getPackageName())); break;
+            case "test_voice": activity.runOnUiThread(() -> { if (!CeyoIslandService.show(activity, null)) activity.startActivity(new Intent(activity, CeyoAssistantActivity.class).putExtra("no_island", true)); }); return;
             case "notifications":
                 if (Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) { activity.runOnUiThread(() -> activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 51)); return; }
                 i = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, ctx().getPackageName()); break;

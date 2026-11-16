@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
@@ -72,6 +74,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/ceyo_widget_info" />
         </receiver>
 
+        <service android:name=".assistant.CeyoIslandService" android:exported="false" android:foregroundServiceType="microphone" />
         <service android:name=".assistant.CeyoWakeService" android:process=":wake" android:exported="false" android:foregroundServiceType="microphone" />
         <service android:name=".assistant.CeyoCallScreener" android:exported="true" android:permission="android.permission.BIND_SCREENING_SERVICE">
             <intent-filter><action android:name="android.telecom.CallScreeningService" /></intent-filter>
