@@ -1,3 +1,4 @@
+import { consumePhonePrompt, phoneLiveEnd, phoneLiveUpdate } from "@/lib/native/assistantBridge";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import { appCopyRestricted } from "@/lib/appInteractionPolicy";
@@ -150,6 +151,24 @@ function Composer({
     return () => document.removeEventListener("pointerdown", close, true);
   }, [plusOpen]);
   useEffect(() => { recordingAlive.current = true; return () => { recordingAlive.current = false; }; }, []);
+  // A prompt handed over by the phone (assistant sheet, widget, share sheet, alerts) is sent or drafted once.
+  useEffect(() => {
+    const p = consumePhonePrompt();
+    if (!p) return;
+    if (p.send) onSend(p.text); else { setText(p.text); textarea.current?.focus(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // While the bot works and the user leaves the app, the phone shows a live notification and widget update.
+  const liveShown = useRef(false);
+  useEffect(() => {
+    const sync = () => {
+      if (running && document.hidden) { phoneLiveUpdate("Ceyo شغال…", ar ? "بيكمّل مهمتك في الخلفية" : "Working on it in the background"); liveShown.current = true; }
+    };
+    sync();
+    if (!running && liveShown.current) { liveShown.current = false; phoneLiveEnd("Ceyo خلص ✅", ar ? "الرد جاهز، افتح تشوفه" : "Your answer is ready"); }
+    document.addEventListener("visibilitychange", sync);
+    return () => document.removeEventListener("visibilitychange", sync);
+  }, [running, ar]);
 
   const submit = async () => {
     const typed = text.trim();
