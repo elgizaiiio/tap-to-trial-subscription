@@ -92,7 +92,8 @@ function PhoneAssistantGroup() {
     refresh();
     const onVis = () => { if (!document.hidden) refresh(); };
     document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
+    const timer = window.setInterval(() => { if (!document.hidden) refresh(); }, 2000);
+    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", onVis); };
   }, []);
   if (!st) return null;
   const later = () => window.setTimeout(refresh, 400);
@@ -108,7 +109,7 @@ function PhoneAssistantGroup() {
   return (
     <Group title="Phone assistant">
       <Row label="Ceyo as phone assistant" sub="Long-press power to talk" value={st.assistant ? "On" : "Set up"} onClick={() => phoneOpenSettings("assistant")} />
-      <Row label={'Say "Hey Ceyo" / "يا سيو"'} sub="Listens on the phone only" checked={!!st.wake_on} right={<Toggle on={!!st.wake_on} />} onClick={() => { phoneOption("wake_on", !st.wake_on); later(); }} />
+      <Row label={'Say "Hey Ceyo" / "يا سيو"'} sub={st.wake_status === "failed" ? "Microphone or voice engine unavailable" : st.wake_status === "listening" ? "Listening" : st.wake_status === "starting" ? "Starting…" : "Stopped"} checked={!!st.wake_on} right={<Toggle on={!!st.wake_on} />} onClick={() => { phoneOption("wake_on", !st.wake_on); later(); }} />
       <Row label="Notifications" value={st.notifications ? "On" : "Turn on"} onClick={() => { phoneOpenSettings("notifications"); later(); }} />
       <Row label="Morning briefing" value={st.morning_on ? `${pad(st.morning_h)}:${pad(st.morning_m)}` : "Off"} onClick={() => st.morning_on ? (phoneRoutine("morning", st.morning_h ?? 7, st.morning_m ?? 0, false), later()) : pickTime("morning", st.morning_h ?? 7, st.morning_m ?? 0)} />
       <Row label="Night reflection" value={st.night_on ? `${pad(st.night_h)}:${pad(st.night_m)}` : "Off"} onClick={() => st.night_on ? (phoneRoutine("night", st.night_h ?? 23, st.night_m ?? 0, false), later()) : pickTime("night", st.night_h ?? 23, st.night_m ?? 0)} />
