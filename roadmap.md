@@ -2,7 +2,9 @@
 - [x] Show proposed assistant/notification design before native visual changes.
 - [x] Reuse owner-locked bot thread and combine paginated prior app-thread history without moving/deleting rows; messaging-channel threads stay separate.
 - [x] Remove blocking WebView trust checks; use assistant role dialog and notification settings correctly; validate exact BPE tokens and release wake microphone before speech recognition.
-- [ ] Build/sign Ceyo Try v9 and verify tests; real Honor wake accuracy remains device-dependent.
+- [x] Build/sign Ceyo Try v9 (1.2.3-try, code 9, arm64, ~52 MB); same certificate as v8; 23 web + 12 JVM tests pass. Direct temporary download verified byte-for-byte.
+- [ ] Publish updated web app to the configured Lovable host; preview code alone does not update the APK's hosted UI.
+- [ ] Real signed-in timeline and Honor wake/notification test — external_unmanaged session unavailable; needs device test. Live assistant-sheet replies and universal OEM top-chip are not implemented; trial Firebase remains unconfigured.
 
 ## Android assistant repair — 2026-11-16
 - [x] Validate current keyword/model assets (local engine init passed), repair microphone lifecycle and exclude assistant self-selection; device accuracy/crash reproduction not available.
